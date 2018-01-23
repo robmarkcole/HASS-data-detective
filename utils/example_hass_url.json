@@ -1,0 +1,3 @@
+{
+    "url": "postgresql+psycopg2://hass:pass@ip:5432/db_name"
+}
