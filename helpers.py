@@ -13,3 +13,14 @@ def load_url(filename):
         print('Failed to load url')
         url = None
     return url['url']
+
+
+def isfloat(value):
+    """
+    Check if string can be parsed to a float.
+    """
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False

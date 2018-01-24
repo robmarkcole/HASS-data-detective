@@ -3,6 +3,7 @@ Classes for parsing home-assistant data.
 """
 
 from fbprophet import Prophet
+import helpers as helpers
 import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -32,7 +33,7 @@ class DataParser():
 
         df = query_df.copy()
         # Convert numericals to floats.
-        df['numerical'] = df['state'].apply(lambda x: self.isfloat(x))
+        df['numerical'] = df['state'].apply(lambda x: helpers.isfloat(x))
 
         # Multiindexing
         df = df[['domain', 'entity', 'last_changed', 'numerical', 'state']]
@@ -60,7 +61,7 @@ class DataParser():
     def plot_sensor(self, sensor):
         """
         Basic plot of a single sensor
-        Could also display statistics or more detailed plots
+        Could also display statistics for more detailed plots
         """
         df = self._sensors_df[sensor]  # Extract the dataframe
         fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # Create the plot
@@ -75,12 +76,20 @@ class DataParser():
         """
         Extract a single sensor dataframe from the sql database
         Returns the dataframe with columns 'ds' and 'y'
+
+        REPLACE - DOESNT MAKE SENSE TO QUERY AGAIN
         """
 
-        stmt = text("""SELECT last_changed, state FROM states
-        WHERE NOT state='unknown' AND states.entity_id = '%s'""" % sensor)
+        stmt = text(
+            """
+            SELECT last_changed, state
+            FROM states
+            WHERE NOT state='unknown'
+            AND states.entity_id = '%s'
+            """
+            % sensor)
 
-        query = self.engine.execute(stmt)
+        query = self._engine.execute(stmt)
 
         # get rows from query into a pandas dataframe
         df = pd.DataFrame(query.fetchall())
@@ -127,18 +136,7 @@ class DataParser():
             print(error)
             return
 
-    def isfloat(self, value):
-        """
-        Check if string can be parsed to a float.
-        """
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
-
-    def rename_entity(self, entity_id):
-        """
-        Takes an entity_if of form sensor.name and returns name.
-        """
-        return entity_id.split('.')[1]
+    @property
+    def list_sensors(self):
+        """Print the list of sensor entity_id."""
+        return self._sensors
