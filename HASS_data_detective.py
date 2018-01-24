@@ -6,6 +6,7 @@ from fbprophet import Prophet
 import helpers as helpers
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 from sqlalchemy import create_engine, text
 
 
@@ -15,6 +16,12 @@ class DataParser():
     (query_df). Also gets a dataframe of only the sensors (sensors_df)
     """
     def __init__(self, url):
+        """
+        Parameters
+        ----------
+        url : str
+            The URL to the database.
+        """
         self._engine = create_engine(url)
 
         # Query text
@@ -60,8 +67,13 @@ class DataParser():
 
     def plot_sensor(self, sensor):
         """
-        Basic plot of a single sensor
-        Could also display statistics for more detailed plots
+        Basic plot of a single sensor.
+        Could also display statistics for more detailed plots.
+
+        Parameters
+        ----------
+        sensor : str
+            The entity_id to plot
         """
         df = self._sensors_df[sensor]  # Extract the dataframe
         fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # Create the plot
@@ -72,12 +84,28 @@ class DataParser():
         plt.show()
         return
 
+    def sensor_pairplot(self, sensor_list):
+        """
+        Seaborn pairplot.
+
+        Parameters
+        ----------
+        sensor_list : list of str
+            The list of entity_id to pairplot
+        """
+        df = self._sensors_df[sensor_list]
+        sns.pairplot(df)
+        return
+
     def single_sensor(self, sensor):
         """
-        Extract a single sensor dataframe from the sql database
-        Returns the dataframe with columns 'ds' and 'y'
+        Extract a single sensor dataframe from the sql database.
+        Returns the dataframe with columns 'ds' and 'y'.
 
-        REPLACE - DOESNT MAKE SENSE TO QUERY AGAIN
+        Parameters
+        ----------
+        sensor : str
+            The entity_id to plot
         """
 
         stmt = text(
@@ -138,5 +166,10 @@ class DataParser():
 
     @property
     def list_sensors(self):
-        """Print the list of sensor entity_id."""
+        """Return the list of sensors."""
         return self._sensors
+
+    @property
+    def get_sensors(self):
+        """Return the dataframe holding sensor data."""
+        return self._sensors_df
