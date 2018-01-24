@@ -42,6 +42,12 @@ class DataParser():
         # Convert numericals to floats.
         df['numerical'] = df['state'].apply(lambda x: helpers.isfloat(x))
 
+        # Fix timestamp
+        df['last_changed'] = df['last_changed'].apply(
+            lambda x: x.tz_localize(None))
+        df['last_changed'] = pd.to_datetime(
+            df['last_changed'], format="%Y:%m:%d %H:%M:%S")
+
         # Multiindexing
         df = df[['domain', 'entity', 'last_changed', 'numerical', 'state']]
         df = df.set_index(['domain', 'entity', 'numerical', 'last_changed'])
@@ -139,7 +145,18 @@ class DataParser():
     def prophet_model(self, sensor, periods=0, freq='S', **kwargs):
         """
         Make a propet model for the given sensor for the number of periods.
-        The default period is 0 (no forecast) with default unit of seconds
+
+        Parameters
+        ----------
+        sensor : str
+            The entity_id to plot
+
+        periods : int
+            The default period is 0 (no forecast)
+
+        freq : str
+            Unit of time, defaults to seconds.
+
         """
         # Find the information for sensor
         df = self.single_sensor(sensor)
