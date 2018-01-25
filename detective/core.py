@@ -2,8 +2,8 @@
 Classes for parsing home-assistant data.
 """
 
+from . import helpers
 from fbprophet import Prophet
-import helpers as helpers
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -41,12 +41,6 @@ class DataParser():
         df = query_df.copy()
         # Convert numericals to floats.
         df['numerical'] = df['state'].apply(lambda x: helpers.isfloat(x))
-
-        # Fix timestamp
-        df['last_changed'] = df['last_changed'].apply(
-            lambda x: x.tz_localize(None))
-        df['last_changed'] = pd.to_datetime(
-            df['last_changed'], format="%Y:%m:%d %H:%M:%S")
 
         # Multiindexing
         df = df[['domain', 'entity', 'last_changed', 'numerical', 'state']]
