@@ -181,6 +181,31 @@ class DataParser():
             print(error)
             return
 
+    def all_corrs(self):
+        corr_df = self._sensors_df.corr()
+
+        corr_names = []
+        corrs = []
+
+        for i in range(len(corr_df.index)):
+            for j in range(len(corr_df.index)):
+                c_name = corr_df.index[i]
+                r_name = corr_df.columns[j]
+                corr_names.append('%s-%s' % (c_name, r_name))
+                corrs.append(corr_df.ix[i, j])
+
+
+        corrs_all = pd.DataFrame(index = corr_names)
+        corrs_all['value'] = corrs
+        corrs_all = corrs_all.dropna().drop(corrs_all[(corrs_all['value'] == float(1))].index)
+        corrs_all = corrs_all.drop(corrs_all[corrs_all['value'] == float(-1)].index) 
+
+        corrs_all = corrs_all.sort_values('value', ascending=False)
+
+        return corrs_all
+
+
+
     @property
     def list_sensors(self):
         """Return the list of sensors."""
