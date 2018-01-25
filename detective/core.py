@@ -60,7 +60,8 @@ class DataParser():
             index='last_changed', columns='entity', values='state')
         sensors_df = sensors_df.fillna(method='ffill')
         sensors_df = sensors_df.dropna()  # Drop any remaining nan.
-        sensors_df.index = pd.to_datetime(sensors_df.index)
+        sensors_df.index = pd.to_datetime(sensors_df.index)  # Strings to dt.
+        sensors_df.index = sensors_df.index.tz_localize(None)  # Drop tz.
 
         self._query_df = df.copy()
         self._sensors_df = sensors_df.copy()
@@ -175,9 +176,22 @@ class DataParser():
             print(error)
             return
 
-    def all_corrs(self):
-        corr_df = self._sensors_df.corr()
+    @property
+    def list_sensors(self):
+        """Return the list of sensors."""
+        return self._sensors
 
+    @property
+    def get_sensors(self):
+        """Return the dataframe holding sensor data."""
+        return self._sensors_df
+
+    @property
+    def get_corrs(self):
+        """
+        Calculate the correlation coefficients.
+        """
+        corr_df = self._sensors_df.corr()
         corr_names = []
         corrs = []
 
@@ -188,24 +202,13 @@ class DataParser():
                 corr_names.append('%s-%s' % (c_name, r_name))
                 corrs.append(corr_df.ix[i, j])
 
-
-        corrs_all = pd.DataFrame(index = corr_names)
+        corrs_all = pd.DataFrame(index=corr_names)
         corrs_all['value'] = corrs
-        corrs_all = corrs_all.dropna().drop(corrs_all[(corrs_all['value'] == float(1))].index)
-        corrs_all = corrs_all.drop(corrs_all[corrs_all['value'] == float(-1)].index) 
+        corrs_all = corrs_all.dropna().drop(
+            corrs_all[(corrs_all['value'] == float(1))].index)
+        corrs_all = corrs_all.drop(
+            corrs_all[corrs_all['value'] == float(-1)].index)
 
         corrs_all = corrs_all.sort_values('value', ascending=False)
-
+        corrs_all = corrs_all.drop_duplicates()
         return corrs_all
-
-
-
-    @property
-    def list_sensors(self):
-        """Return the list of sensors."""
-        return self._sensors
-
-    @property
-    def get_sensors(self):
-        """Return the dataframe holding sensor data."""
-        return self._sensors_df
