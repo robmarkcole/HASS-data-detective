@@ -117,12 +117,12 @@ class NumericalSensors():
         entities : list of entities
             The entities to plot.
             """
-        fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # Create the plot
-        ax.plot(self._sensors_num_df[entities])
-        plt.xlabel('Date')
-        plt.ylabel('Reading')
-        # plt.title('{} Sensor History.'.format(sensor.split(".")[1]))
-        plt.show()
+
+        ax = self._sensors_num_df[entities].plot(figsize=[12, 6])
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Reading')
+        return
 
     @property
     def entities(self):
