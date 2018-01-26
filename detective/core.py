@@ -12,8 +12,8 @@ from sqlalchemy import create_engine, text
 
 class DataParser():
     """
-    Initializing the parser fetches all of the data in a pandas dataframe
-    (query_df). Also gets a dataframe of only the sensors (sensors_df)
+    Initializing the parser fetches all of the data from the database and
+    places it in a pandas dataframe.
     """
     def __init__(self, url):
         """
@@ -22,10 +22,11 @@ class DataParser():
         url : str
             The URL to the database.
         """
+        self._url = url
         self._engine = create_engine(url)
 
         # Query text
-        stmt = text(
+        query = text(
             """
             SELECT domain, entity_id, state, last_changed
             FROM states
@@ -33,42 +34,48 @@ class DataParser():
             """
             )
 
-        query = self._engine.execute(stmt)
-        result = query.fetchall()
-        query_df = pd.DataFrame(result)  # Info to dataframe.
-        query_df.columns = ['domain', 'entity', 'state', 'last_changed']
+        try:
+            response = self._engine.execute(query)
+        except:
+            raise ValueError("Check your database url is valid")
 
-        df = query_df.copy()
-        # Convert numericals to floats.
-        df['numerical'] = df['state'].apply(lambda x: helpers.isfloat(x))
+        print("Querying the database, this could take a while")
+
+        master_df = pd.DataFrame(response.fetchall())  # Info to dataframe.
+        master_df.columns = ['domain', 'entity', 'state', 'last_changed']
+
+        # Check if state is float and store that info in numericals category.
+        master_df['numerical'] = master_df['state'].apply(
+            lambda x: helpers.isfloat(x))
 
         # Multiindexing
-        df = df[['domain', 'entity', 'last_changed', 'numerical', 'state']]
-        df = df.set_index(['domain', 'entity', 'numerical', 'last_changed'])
+        master_df.set_index(
+            ['domain', 'entity', 'numerical', 'last_changed'], inplace=True)
+        self._master_df = master_df.copy()
 
-        # Extract all the sensors
-        sensors_df = df.query('domain == "sensor" & numerical == True')
-        sensors_df['state'] = sensors_df['state'].astype('float')
+        # Extract all the numerical sensors
+        sensors_num_df = master_df.query(
+            'domain == "sensor" & numerical == True')
+        sensors_num_df['state'] = sensors_num_df['state'].astype('float')
 
         # List of sensors
         sensors_list = list(
-            sensors_df.index.get_level_values('entity').unique())
+            sensors_num_df.index.get_level_values('entity').unique())
         self._sensors = sensors_list
 
         # Pivot sensor dataframe for plotting
-        sensors_df = sensors_df.pivot_table(
+        sensors_num_df = sensors_num_df.pivot_table(
             index='last_changed', columns='entity', values='state')
-        sensors_df = sensors_df.fillna(method='ffill')
-        sensors_df = sensors_df.dropna()  # Drop any remaining nan.
-        sensors_df.index = pd.to_datetime(sensors_df.index)  # Strings to dt.
-        sensors_df.index = sensors_df.index.tz_localize(None)  # Drop tz.
+        sensors_num_df = sensors_num_df.fillna(method='ffill')
+        sensors_num_df = sensors_num_df.dropna()  # Drop any remaining nan.
+        sensors_num_df.index = pd.to_datetime(sensors_num_df.index)
+        sensors_num_df.index = sensors_num_df.index.tz_localize(None)
+        self._sensors_num_df = sensors_num_df.copy()
+        return
 
-        self._query_df = df.copy()
-        self._sensors_df = sensors_df.copy()
-
-    def plot_sensor(self, sensor):
+    def plot_numerical_sensor(self, sensor):
         """
-        Basic plot of a single sensor.
+        Basic plot of a single numerical sensor.
         Could also display statistics for more detailed plots.
 
         Parameters
@@ -76,7 +83,7 @@ class DataParser():
         sensor : str
             The entity_id to plot
         """
-        df = self._sensors_df[sensor]  # Extract the dataframe
+        df = self._sensors_num_df[sensor]  # Extract the dataframe
         fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # Create the plot
         ax.plot(df)
         plt.xlabel('Date')
@@ -85,7 +92,7 @@ class DataParser():
         plt.show()
         return
 
-    def sensor_pairplot(self, sensor_list):
+    def numerical_sensor_pairplot(self, sensor_list):
         """
         Seaborn pairplot.
 
@@ -94,7 +101,7 @@ class DataParser():
         sensor_list : list of str
             The list of entity_id to pairplot
         """
-        df = self._sensors_df[sensor_list]
+        df = self._sensors_num_df[sensor_list]
         sns.pairplot(df)
         return
 
@@ -182,16 +189,16 @@ class DataParser():
         return self._sensors
 
     @property
-    def get_sensors(self):
-        """Return the dataframe holding sensor data."""
-        return self._sensors_df
+    def get_sensors_numerical(self):
+        """Return the dataframe holding numerical sensor data."""
+        return self._sensors_num_df
 
     @property
     def get_corrs(self):
         """
         Calculate the correlation coefficients.
         """
-        corr_df = self._sensors_df.corr()
+        corr_df = self._sensors_num_df.corr()
         corr_names = []
         corrs = []
 
