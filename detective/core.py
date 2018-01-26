@@ -1,19 +1,18 @@
 """
-Classes for parsing home-assistant data.
+Classes and functions for parsing home-assistant data.
 """
 
 from . import helpers
 from fbprophet import Prophet
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 from sqlalchemy import create_engine, text
 
 
 class DataParser():
     """
     Initializing the parser fetches all of the data from the database and
-    places it in a pandas dataframe.
+    places it in a master pandas dataframe.
     """
     def __init__(self, url):
         """
@@ -38,7 +37,6 @@ class DataParser():
             response = self._engine.execute(query)
         except:
             raise ValueError("Check your database url is valid")
-
         print("Querying the database, this could take a while")
 
         master_df = pd.DataFrame(response.fetchall())  # Info to dataframe.
@@ -53,15 +51,26 @@ class DataParser():
             ['domain', 'entity', 'numerical', 'last_changed'], inplace=True)
         self._master_df = master_df.copy()
 
+    @property
+    def master_df(self):
+        """Return the dataframe holding numerical sensor data."""
+        return self._master_df
+
+
+class NumericalSensors():
+    """
+    Class handling numerical sensor data.
+    """
+    def __init__(self, master_df):
         # Extract all the numerical sensors
         sensors_num_df = master_df.query(
             'domain == "sensor" & numerical == True')
-        sensors_num_df['state'] = sensors_num_df['state'].astype('float')
+        sensors_num_df = sensors_num_df.astype('float')
 
         # List of sensors
-        sensors_list = list(
+        entities = list(
             sensors_num_df.index.get_level_values('entity').unique())
-        self._sensors = sensors_list
+        self._entities = entities
 
         # Pivot sensor dataframe for plotting
         sensors_num_df = sensors_num_df.pivot_table(
@@ -71,130 +80,8 @@ class DataParser():
         sensors_num_df.index = pd.to_datetime(sensors_num_df.index)
         sensors_num_df.index = sensors_num_df.index.tz_localize(None)
         self._sensors_num_df = sensors_num_df.copy()
-        return
 
-    def plot_numerical_sensor(self, sensor):
-        """
-        Basic plot of a single numerical sensor.
-        Could also display statistics for more detailed plots.
-
-        Parameters
-        ----------
-        sensor : str
-            The entity_id to plot
-        """
-        df = self._sensors_num_df[sensor]  # Extract the dataframe
-        fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # Create the plot
-        ax.plot(df)
-        plt.xlabel('Date')
-        plt.ylabel('Reading')
-        plt.title('{} Sensor History.'.format(sensor.split(".")[1]))
-        plt.show()
-        return
-
-    def numerical_sensor_pairplot(self, sensor_list):
-        """
-        Seaborn pairplot.
-
-        Parameters
-        ----------
-        sensor_list : list of str
-            The list of entity_id to pairplot
-        """
-        df = self._sensors_num_df[sensor_list]
-        sns.pairplot(df)
-        return
-
-    def single_sensor(self, sensor):
-        """
-        Extract a single sensor dataframe from the sql database.
-        Returns the dataframe with columns 'ds' and 'y'.
-
-        Parameters
-        ----------
-        sensor : str
-            The entity_id to plot
-        """
-
-        stmt = text(
-            """
-            SELECT last_changed, state
-            FROM states
-            WHERE NOT state='unknown'
-            AND states.entity_id = '%s'
-            """
-            % sensor)
-
-        query = self._engine.execute(stmt)
-
-        # get rows from query into a pandas dataframe
-        df = pd.DataFrame(query.fetchall())
-
-        df.columns = ['ds', 'y']
-
-        df = df.set_index(pd.to_datetime(df['ds'], utc=None)).tz_localize(None)
-        df['ds'] = df.index
-        return df
-
-    def create_prophet_model(self, **kwargs):
-        """
-        Creates a prophet model.
-        Allows adjustment via keyword arguments
-        """
-        model = Prophet(**kwargs)
-        return model
-
-    def prophet_model(self, sensor, periods=0, freq='S', **kwargs):
-        """
-        Make a propet model for the given sensor for the number of periods.
-
-        Parameters
-        ----------
-        sensor : str
-            The entity_id to plot
-
-        periods : int
-            The default period is 0 (no forecast)
-
-        freq : str
-            Unit of time, defaults to seconds.
-
-        """
-        # Find the information for sensor
-        df = self.single_sensor(sensor)
-
-        try:
-            # Check to make sure dataframe has correct columns
-            assert ('ds' in df.columns) & ('y' in df.columns), \
-                "DataFrame needs both ds (date) and y (value) columns"
-
-            # Create the model and fit on dataframe
-            model = self.create_prophet_model(**kwargs)
-            model.fit(df)
-
-            # Make a future dataframe for specified number of periods
-            future = model.make_future_dataframe(periods=periods, freq=freq)
-            future = model.predict(future)
-
-            # Return the model and future dataframe for plotting
-            return model, future
-
-        except AssertionError as error:
-            print(error)
-            return
-
-    @property
-    def list_sensors(self):
-        """Return the list of sensors."""
-        return self._sensors
-
-    @property
-    def get_sensors_numerical(self):
-        """Return the dataframe holding numerical sensor data."""
-        return self._sensors_num_df
-
-    @property
-    def get_corrs(self):
+    def correlations(self):
         """
         Calculate the correlation coefficients.
         """
@@ -219,3 +106,77 @@ class DataParser():
         corrs_all = corrs_all.sort_values('value', ascending=False)
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
+
+    def plot(self, entities):
+        """
+        Basic plot of a numerical sensor data.
+        Could also display statistics for more detailed plots.
+
+        Parameters
+        ----------
+        entities : list of entities
+            The entities to plot.
+            """
+        fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # Create the plot
+        ax.plot(self._sensors_num_df[entities])
+        plt.xlabel('Date')
+        plt.ylabel('Reading')
+        # plt.title('{} Sensor History.'.format(sensor.split(".")[1]))
+        plt.show()
+
+    @property
+    def entities(self):
+        """Return the list of sensors entities."""
+        return self._entities
+
+    @property
+    def data(self):
+        """Return the dataframe holding numerical sensor data."""
+        return self._sensors_num_df
+
+
+# To tidy, precition
+def create_prophet_model(self, **kwargs):
+    """
+    Creates a prophet model.
+    Allows adjustment via keyword arguments
+    """
+    model = Prophet(**kwargs)
+    return model
+
+
+def prophet_model(self, sensor_ds, periods=0, freq='S', **kwargs):
+    """
+    Make a propet model for the given sensor for the number of periods.
+
+    Parameters
+    ----------
+    sensor_ds : pandas series
+        The sensor to predict
+
+    periods : int
+        The default period is 0 (no forecast)
+
+    freq : str
+        Unit of time, defaults to seconds.
+    """
+
+    try:
+        # Fix for series
+        assert ('ds' in sensor_ds.columns) & ('y' in sensor_ds.columns), \
+            "DataFrame needs both ds (date) and y (value) columns"
+
+        # Create the model and fit on dataframe
+        model = self.create_prophet_model(**kwargs)
+        model.fit(sensor_ds)
+
+        # Make a future dataframe for specified number of periods
+        future = model.make_future_dataframe(periods=periods, freq=freq)
+        future = model.predict(future)
+
+        # Return the model and future dataframe for plotting
+        return model, future
+
+    except AssertionError as error:
+        print(error)
+        return
