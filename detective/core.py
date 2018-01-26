@@ -4,7 +4,6 @@ Classes and functions for parsing home-assistant data.
 
 from . import helpers
 from fbprophet import Prophet
-import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
 
@@ -135,48 +134,59 @@ class NumericalSensors():
         return self._sensors_num_df
 
 
-# To tidy, precition
-def create_prophet_model(self, **kwargs):
+class Prediction():
     """
-    Creates a prophet model.
-    Allows adjustment via keyword arguments
+    Class handling predictions for a single numerical sensor.
     """
-    model = Prophet(**kwargs)
-    return model
+    def __init__(self, sensor_ds):
+        """
+        Parameters
+        ----------
+        sensor_ds : pandas series
+            The pandas series for a single sensor.
+        """
+        self._sensor_ds = sensor_ds
+        self._name = sensor_ds.name + "_prediction"
 
+        def create_prophet_model(self, **kwargs):
+            """
+            Creates a prophet model.
+            Allows adjustment via keyword arguments
+            """
+            model = Prophet(**kwargs)
+            return model
 
-def prophet_model(self, sensor_ds, periods=0, freq='S', **kwargs):
-    """
-    Make a propet model for the given sensor for the number of periods.
+        def prophet_model(self, sensor_ds, periods=0, freq='S', **kwargs):
+            """
+            Make a propet model for the given sensor for the number of periods.
 
-    Parameters
-    ----------
-    sensor_ds : pandas series
-        The sensor to predict
+            Parameters
+            ----------
+            sensor_ds : pandas series
+                The sensor to predict
 
-    periods : int
-        The default period is 0 (no forecast)
+            periods : int
+                The default period is 0 (no forecast)
 
-    freq : str
-        Unit of time, defaults to seconds.
-    """
+            freq : str
+                Unit of time, defaults to seconds.
+            """
 
-    try:
-        # Fix for series
-        assert ('ds' in sensor_ds.columns) & ('y' in sensor_ds.columns), \
-            "DataFrame needs both ds (date) and y (value) columns"
+            try:
+                assert ('ds' in sensor_ds.columns) & ('y' in sensor_ds.columns),\
+                "DataFrame needs both ds (date) and y (value) columns"
 
-        # Create the model and fit on dataframe
-        model = self.create_prophet_model(**kwargs)
-        model.fit(sensor_ds)
+                # Create the model and fit on dataframe
+                model = self.create_prophet_model(**kwargs)
+                model.fit(sensor_ds)
 
-        # Make a future dataframe for specified number of periods
-        future = model.make_future_dataframe(periods=periods, freq=freq)
-        future = model.predict(future)
+                # Make a future dataframe for specified number of periods
+                future = model.make_future_dataframe(periods=periods, freq=freq)
+                future = model.predict(future)
 
-        # Return the model and future dataframe for plotting
-        return model, future
+                # Return the model and future dataframe for plotting
+                return model, future
 
-    except AssertionError as error:
-        print(error)
-        return
+            except AssertionError as error:
+                print(error)
+                return
