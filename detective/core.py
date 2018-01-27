@@ -74,10 +74,15 @@ class NumericalSensors():
         # Pivot sensor dataframe for plotting
         sensors_num_df = sensors_num_df.pivot_table(
             index='last_changed', columns='entity', values='state')
-        sensors_num_df = sensors_num_df.fillna(method='ffill')
-        sensors_num_df = sensors_num_df.dropna()  # Drop any remaining nan.
+
         sensors_num_df.index = pd.to_datetime(sensors_num_df.index)
         sensors_num_df.index = sensors_num_df.index.tz_localize(None)
+
+        # Perform some operations to even out data.
+        sensors_num_df = sensors_num_df.fillna(method='ffill')
+        sensors_num_df = sensors_num_df.resample('S').mean()  # resample
+        sensors_num_df = sensors_num_df.dropna()  # Drop any remaining nan.
+
         self._sensors_num_df = sensors_num_df.copy()
 
     def correlations(self):
@@ -145,48 +150,66 @@ class Prediction():
         sensor_ds : pandas series
             The pandas series for a single sensor.
         """
+
         self._sensor_ds = sensor_ds
         self._name = sensor_ds.name + "_prediction"
 
-        def create_prophet_model(self, **kwargs):
-            """
-            Creates a prophet model.
-            Allows adjustment via keyword arguments
-            """
-            model = Prophet(**kwargs)
-            return model
+        sensor_df = self._sensor_ds.to_frame()  # Convert series to dataframe
+        sensor_df.reset_index(level=0, inplace=True)  # Convert index to col.
+        sensor_df.columns = ['ds', 'y']  # Rename cols.
+        self._sensor_df = sensor_df
+        return
 
-        def prophet_model(self, sensor_ds, periods=0, freq='S', **kwargs):
-            """
-            Make a propet model for the given sensor for the number of periods.
+    def create_prophet_model(self, **kwargs):
+        """
+        Creates a prophet model.
+        Allows adjustment via keyword arguments
+        """
+        model = Prophet(**kwargs)
+        return model
 
-            Parameters
-            ----------
-            sensor_ds : pandas series
-                The sensor to predict
+    def prophet_model(self, periods=0, freq='S', **kwargs):
+        """
+        Make a propet model for the given sensor for the number of periods.
 
-            periods : int
-                The default period is 0 (no forecast)
+        Parameters
+        ----------
 
-            freq : str
-                Unit of time, defaults to seconds.
-            """
+        periods : int
+            The default period is 0 (no forecast)
 
-            try:
-                assert ('ds' in sensor_ds.columns) & ('y' in sensor_ds.columns),\
-                "DataFrame needs both ds (date) and y (value) columns"
+        freq : str
+            Unit of time, defaults to seconds.
+        """
 
-                # Create the model and fit on dataframe
-                model = self.create_prophet_model(**kwargs)
-                model.fit(sensor_ds)
+        # Create the model and fit on dataframe
+        model = self.create_prophet_model(**kwargs)
+        model.fit(self._sensor_df)
 
-                # Make a future dataframe for specified number of periods
-                future = model.make_future_dataframe(periods=periods, freq=freq)
-                future = model.predict(future)
+        # Make a future dataframe for specified number of periods
+        future = model.make_future_dataframe(periods=periods, freq=freq)
+        future = model.predict(future)
 
-                # Return the model and future dataframe for plotting
-                return model, future
+        self._model = model
+        self._future = future
+        return
 
-            except AssertionError as error:
-                print(error)
-                return
+    def plot_future(self):
+        """Plot the prediction."""
+        self._model.plot(self._future).show()
+        return
+
+    def plot_components(self):
+        """Plot the prediction."""
+        self._model.plot_components(self._future).show()
+        return
+
+    @property
+    def name(self):
+        """Return the prediction name."""
+        return self._name
+
+    @property
+    def data(self):
+        """Return the prediction name."""
+        return self._sensor_df
