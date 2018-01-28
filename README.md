@@ -1,5 +1,5 @@
 
-Notebook showing usage of the data detective package.
+Jupyter notebook [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/blob/development/Usage%20of%20detective.ipynb) shows usage of the data detective package.
 
 **References**
 * https://facebook.github.io/prophet/
@@ -38,15 +38,8 @@ We use the DataParser class to load data from the database. This class performs 
 
 
 ```python
-%%time
 parser = detective.DataParser(DB_URL)
 ```
-
-    Querying the database, this could take a while
-    CPU times: user 5.28 s, sys: 982 ms, total: 6.26 s
-    Wall time: 49 s
-
-
 Lets create an object holding the numerical sensor
 
 
@@ -60,9 +53,6 @@ We can access the list of sensor entities using the list_sensors attribute
 ```python
 sensors_num.entities[0:10]
 ```
-
-
-
 
     ['sensor.bme680humidity',
      'sensor.bme680pressure',
@@ -84,23 +74,6 @@ Now lets look at the dataframe
 sensors_num.data.head()
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -292,23 +265,6 @@ corrs = sensors_num.correlations()
 corrs[(corrs['value'] > 0.5) | (corrs['value'] < -0.5)]
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -435,9 +391,9 @@ corrs[(corrs['value'] > 0.5) | (corrs['value'] < -0.5)]
 
 
 
-Unsurprisingly the mean temperature is strongly correlated with all of the temperature sensors. 
+Unsurprisingly the mean temperature is strongly correlated with all of the temperature sensors.
 
-Interestingly my iphone battery level is somewhat inversely correlated with the travel time from home to waterloo, which gets longer late at night when my battery level is more likely to be low. 
+Interestingly my iphone battery level is somewhat inversely correlated with the travel time from home to waterloo, which gets longer late at night when my battery level is more likely to be low.
 
 #### Plot sensor data
 Convenience to plot a sensor data.
@@ -455,7 +411,7 @@ fig = sensors_num.plot(to_plot)
 ```
 
 
-![png](output_21_0.png)
+![png](graphs/output_21_0.png)
 
 
 #### Pairplot
@@ -467,7 +423,7 @@ sns.pairplot(sensors_num.data[to_plot]);
 ```
 
 
-![png](output_23_0.png)
+![png](graphs/output_23_0.png)
 
 
 #### Prediction with prophet
@@ -479,15 +435,7 @@ sensor_ds = sensors_num.data['sensor.darksky_sensor_temperature']
 sensor_ds.plot()
 ```
 
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x126b10828>
-
-
-
-
-![png](output_25_1.png)
+![png](graphs/output_25_1.png)
 
 
 
@@ -502,18 +450,18 @@ Create a prophet model
 print(pred1.prophet_model.__doc__)
 ```
 
-    
+
             Make a propet model for the given sensor for the number of periods.
-    
+
             Parameters
             ----------
-    
+
             periods : int
                 The default period is 0 (no forecast)
-    
+
             freq : str
                 Unit of time, defaults to seconds.
-            
+
 
 
 
@@ -521,13 +469,6 @@ print(pred1.prophet_model.__doc__)
 %%time
 pred1.prophet_model(periods=5, freq='H')
 ```
-
-    INFO:fbprophet.forecaster:Disabling yearly seasonality. Run prophet with yearly_seasonality=True to override this.
-    INFO:fbprophet.forecaster:Disabling weekly seasonality. Run prophet with weekly_seasonality=True to override this.
-    /anaconda3/lib/python3.6/site-packages/pystan/misc.py:399: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
-      elif np.issubdtype(np.asarray(v).dtype, float):
-
-
     CPU times: user 17.1 s, sys: 265 ms, total: 17.4 s
     Wall time: 17.6 s
 
@@ -537,12 +478,8 @@ pred1.prophet_model(periods=5, freq='H')
 pred1.plot_future()
 ```
 
-    /anaconda3/lib/python3.6/site-packages/matplotlib/figure.py:418: UserWarning: matplotlib is currently using a non-GUI backend, so cannot show the figure
-      "matplotlib is currently using a non-GUI backend, "
 
-
-
-![png](output_30_1.png)
+![png](graphs/output_30_1.png)
 
 
 
@@ -550,12 +487,8 @@ pred1.plot_future()
 pred1.plot_components()
 ```
 
-    /anaconda3/lib/python3.6/site-packages/matplotlib/figure.py:418: UserWarning: matplotlib is currently using a non-GUI backend, so cannot show the figure
-      "matplotlib is currently using a non-GUI backend, "
 
-
-
-![png](output_31_1.png)
+![png](graphs/output_31_1.png)
 
 
 Clearly the daily trend is for the warmest temperatures at early afternoon
