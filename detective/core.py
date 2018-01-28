@@ -78,9 +78,8 @@ class NumericalSensors():
         sensors_num_df.index = pd.to_datetime(sensors_num_df.index)
         sensors_num_df.index = sensors_num_df.index.tz_localize(None)
 
-        # Perform some operations to even out data.
+        # ffil data as triggered on events
         sensors_num_df = sensors_num_df.fillna(method='ffill')
-        sensors_num_df = sensors_num_df.resample('S').mean()  # resample
         sensors_num_df = sensors_num_df.dropna()  # Drop any remaining nan.
 
         self._sensors_num_df = sensors_num_df.copy()
@@ -137,6 +136,46 @@ class NumericalSensors():
     def data(self):
         """Return the dataframe holding numerical sensor data."""
         return self._sensors_num_df
+
+
+class BinarySensors():
+    """
+    Class handling binary sensor data.
+    """
+    def __init__(self, master_df):
+        # Extract all the numerical sensors
+        binary_df = master_df.query(
+            'domain == "binary_sensor"')
+
+        # List of sensors
+        entities = list(
+            binary_df.index.get_level_values('entity').unique())
+        self._entities = entities
+
+        # Binarise
+        binary_df['state'] = binary_df['state'].apply(
+            lambda x: helpers.binary_state(x))
+
+        # Pivot
+        binary_df = binary_df.pivot_table(
+            index='last_changed', columns='entity', values='state')
+
+        # Index to datetime
+        binary_df.index = pd.to_datetime(binary_df.index)
+        binary_df.index = binary_df.index.tz_localize(None)
+
+        self._binary_df = binary_df.copy()
+        return
+
+    @property
+    def data(self):
+        """Return the dataframe holding numerical sensor data."""
+        return self._binary_df
+
+    @property
+    def entities(self):
+        """Return the list of sensors entities."""
+        return self._entities
 
 
 class Prediction():
