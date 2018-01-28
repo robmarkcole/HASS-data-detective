@@ -54,9 +54,6 @@ We can access the list of sensor entities using the list_sensors attribute
 sensors_num.entities[0:10]
 ```
 
-
-
-
     ['sensor.bme680humidity',
      'sensor.bme680pressure',
      'sensor.next_train_in',
@@ -77,23 +74,6 @@ Now lets look at the dataframe
 sensors_num.data.head()
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -285,23 +265,6 @@ corrs = sensors_num.correlations()
 corrs[(corrs['value'] > 0.5) | (corrs['value'] < -0.5)]
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
