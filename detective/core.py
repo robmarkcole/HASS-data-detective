@@ -4,6 +4,7 @@ Classes and functions for parsing home-assistant data.
 
 from . import helpers
 from fbprophet import Prophet
+import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
 
@@ -165,6 +166,24 @@ class BinarySensors():
         binary_df.index = binary_df.index.tz_localize(None)
 
         self._binary_df = binary_df.copy()
+        return
+
+    def plot(self, entities):
+        """
+        Basic plot of a numerical sensor data.
+        Could also display statistics for more detailed plots.
+
+        Parameters
+        ----------
+        entities : list of entities
+            The entities to plot.
+            """
+
+        f, ax = plt.subplots(figsize=(16, 6))
+        ax.step(self._binary_df[entities], 'b', where="post")
+        #ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax.set_xlabel('Date')
+        ax.set_ylabel('State')
         return
 
     @property
