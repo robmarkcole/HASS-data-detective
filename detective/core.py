@@ -162,7 +162,7 @@ class BinarySensors():
             index='last_changed', columns='entity', values='state')
 
         # Index to datetime
-        binary_df.index = pd.to_datetime(binary_df.index)
+        binary_df.index = pd.to_datetime(binary_df.index) # Appears bnot to work
         binary_df.index = binary_df.index.tz_localize(None)
 
         self._binary_df = binary_df.copy()
