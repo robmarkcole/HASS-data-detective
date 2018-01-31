@@ -1,5 +1,5 @@
 
-Jupyter notebook [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/blob/development/Usage%20of%20detective.ipynb) shows usage of the data detective package.
+Jupyter notebook [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/tree/master/usage) shows usage of the data detective package.
 
 **References**
 * https://facebook.github.io/prophet/
