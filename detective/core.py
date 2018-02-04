@@ -111,17 +111,20 @@ class NumericalSensors():
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
 
-    def plot(self, entities):
+    def plot(self, *args):
         """
         Basic plot of a numerical sensor data.
-        Could also display statistics for more detailed plots.
+        Check if a list is passed, if not convert args to a list.
 
         Parameters
         ----------
-        entities : list of entities
+        entities : single entity or list of entities
             The entities to plot.
-            """
-
+        """
+        if isinstance(args[0], list):
+            entities = args[0]
+        else:
+            entities = list(args)
         ax = self._sensors_num_df[entities].plot(figsize=[12, 6])
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         ax.set_xlabel('Date')
@@ -162,7 +165,7 @@ class BinarySensors():
             index='last_changed', columns='entity', values='state')
 
         # Index to datetime
-        binary_df.index = pd.to_datetime(binary_df.index) # Appears bnot to work
+        binary_df.index = pd.to_datetime(binary_df.index) # Appears not to work
         binary_df.index = binary_df.index.tz_localize(None)
 
         self._binary_df = binary_df.copy()
@@ -171,7 +174,6 @@ class BinarySensors():
     def plot(self, entities):
         """
         Basic plot of a numerical sensor data.
-        Could also display statistics for more detailed plots.
 
         Parameters
         ----------
