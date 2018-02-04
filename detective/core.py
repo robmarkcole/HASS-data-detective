@@ -114,17 +114,16 @@ class NumericalSensors():
     def plot(self, *args):
         """
         Basic plot of a numerical sensor data.
-        Check if a list is passed, if not convert args to a list.
+        Attemptes to unpack lists up to 2 deep.
 
         Parameters
         ----------
         entities : single entity or list of entities
             The entities to plot.
         """
-        if isinstance(args[0], list):
-            entities = args[0]
-        else:
-            entities = list(args)
+        entities = []
+        for arg in args:
+            entities += helpers.ensure_list(arg)
         ax = self._sensors_num_df[entities].plot(figsize=[12, 6])
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         ax.set_xlabel('Date')
@@ -179,7 +178,7 @@ class BinarySensors():
         ----------
         entities : list of entities
             The entities to plot.
-            """
+        """
 
         f, ax = plt.subplots(figsize=(16, 6))
         ax.step(self._binary_df[entities], 'b', where="post")
