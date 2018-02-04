@@ -111,17 +111,19 @@ class NumericalSensors():
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
 
-    def plot(self, entities):
+    def plot(self, *args):
         """
         Basic plot of a numerical sensor data.
-        Could also display statistics for more detailed plots.
+        Attemptes to unpack lists up to 2 deep.
 
         Parameters
         ----------
-        entities : list of entities
+        entities : single entity or list of entities
             The entities to plot.
-            """
-
+        """
+        entities = []
+        for arg in args:
+            entities += helpers.ensure_list(arg)
         ax = self._sensors_num_df[entities].plot(figsize=[12, 6])
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         ax.set_xlabel('Date')
@@ -162,28 +164,36 @@ class BinarySensors():
             index='last_changed', columns='entity', values='state')
 
         # Index to datetime
-        binary_df.index = pd.to_datetime(binary_df.index) # Appears bnot to work
+        binary_df.index = pd.to_datetime(binary_df.index)
         binary_df.index = binary_df.index.tz_localize(None)
 
         self._binary_df = binary_df.copy()
         return
 
-    def plot(self, entities):
+    def plot(self, entity):
         """
-        Basic plot of a numerical sensor data.
-        Could also display statistics for more detailed plots.
+        Basic plot of a single binary sensor data.
 
         Parameters
         ----------
-        entities : list of entities
-            The entities to plot.
-            """
-
-        f, ax = plt.subplots(figsize=(16, 6))
-        ax.step(self._binary_df[entities], 'b', where="post")
-        #ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        entity : string
+            The entity to plot
+        """
+        df = self._binary_df[helpers.ensure_list(entity)]
+        resampled = df.resample('s').ffill()  # Sample at seconds and ffill
+        resampled.columns = ['value']
+        fig, ax = plt.subplots(1, 1, figsize=(16, 2))
+        ax.fill_between(
+            resampled.index, y1=0, y2=1, facecolor='royalblue', label='off')
+        ax.fill_between(
+            resampled.index, y1=0, y2=1, where=(
+                resampled['value'] > 0), facecolor='red', label='on')
+        ax.set_title(entity)
         ax.set_xlabel('Date')
-        ax.set_ylabel('State')
+        ax.set_frame_on(False)
+        ax.set_yticks([])
+        plt.legend(loc=(1.01, 0.7))
+        plt.show()
         return
 
     @property

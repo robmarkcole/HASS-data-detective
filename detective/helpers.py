@@ -14,6 +14,29 @@ def binary_state(value):
         return float('nan')
 
 
+def ensure_list(*args):
+    """
+    Check if a list is passed, if not convert args to a list.
+
+    Parameters
+    ----------
+    args : single entity or list of entities
+        The entities of interest.
+
+    Returns
+    -------
+    list
+        A list of entities.
+    """
+    entities = []
+    for arg in args:
+        if isinstance(arg, list):
+            entities += arg
+        else:
+            entities.append(arg)
+    return entities
+
+
 def isfloat(value):
     """
     Check if string can be parsed to a float.
