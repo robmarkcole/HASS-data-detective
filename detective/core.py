@@ -3,13 +3,12 @@ Classes and functions for parsing home-assistant data.
 """
 
 from . import helpers
-from fbprophet import Prophet
 import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
 
 
-class DataParser():
+class HassDatabase():
     """
     Initializing the parser fetches all of the data from the database and
     places it in a master pandas dataframe.
@@ -22,8 +21,49 @@ class DataParser():
             The URL to the database.
         """
         self._url = url
-        self._engine = create_engine(url)
+        self._master_df = None
+        try:
+            self._engine = create_engine(url)
+            print("Successfully connected to {}".format(url))
+            self.fetch_entities()
+        except:
+            print("Connection error, check your URL")
 
+    def perform_query(self, query):
+        """Perform a query, where query is a string."""
+        try:
+            response = self._engine.execute(query)
+            return response
+        except:
+            print("Error with query: {}".format(query))
+
+    def fetch_entities(self):
+        """Fetch unique entities which have data (COUNT>0)."""
+        query = text(
+            """
+            SELECT entity_id, COUNT(*)
+            FROM states
+            GROUP BY entity_id
+            ORDER by 2 DESC
+            """
+            )
+        response = self.perform_query(query)
+        entities = [e[0] for e in list(response)]
+        print("There are {} entities with data".format(len(entities)))
+
+        # Parse the domains from the entities.
+        self._domains = list(set([e.split('.')[0] for e in entities]))
+        self._entities = {}
+
+        # Parse entities into a dict indexed by domain.
+        for d in self._domains:
+            self._entities[d] = [
+                e for e in entities if e.split('.')[0] == d]
+
+    def fetch_all_data(self):
+        """Fetch data for all enetities.
+        Returns the master_df
+        """
         # Query text
         query = text(
             """
@@ -34,27 +74,42 @@ class DataParser():
             )
 
         try:
+            print("Querying the database, this could take a while")
             response = self._engine.execute(query)
+            master_df = pd.DataFrame(response.fetchall())
+            print("master_df created successfully.")
+            self._master_df = master_df.copy()
         except:
-            raise ValueError("Check your database url is valid")
-        print("Querying the database, this could take a while")
+            raise ValueError("Error querying the database.")
 
-        master_df = pd.DataFrame(response.fetchall())  # Info to dataframe.
-        master_df.columns = ['domain', 'entity', 'state', 'last_changed']
+    def parse_all_data(self):
+        """Parse the master df."""
+        self._master_df.columns = [
+            'domain', 'entity', 'state', 'last_changed']
 
-        # Check if state is float and store that info in numericals category.
-        master_df['numerical'] = master_df['state'].apply(
+        # Check if state is float and store in numericals category.
+        self._master_df['numerical'] = self._master_df['state'].apply(
             lambda x: helpers.isfloat(x))
 
         # Multiindexing
-        master_df.set_index(
-            ['domain', 'entity', 'numerical', 'last_changed'], inplace=True)
-        self._master_df = master_df.copy()
+        self._master_df.set_index(
+            ['domain', 'entity', 'numerical', 'last_changed'],
+            inplace=True)
 
     @property
     def master_df(self):
         """Return the dataframe holding numerical sensor data."""
         return self._master_df
+
+    @property
+    def domains(self):
+        """Return the domains."""
+        return self._domains
+
+    @property
+    def entities(self):
+        """Return the entities dict."""
+        return self._entities
 
 
 class NumericalSensors():
@@ -205,79 +260,3 @@ class BinarySensors():
     def entities(self):
         """Return the list of sensors entities."""
         return self._entities
-
-
-class Prediction():
-    """
-    Class handling predictions for a single numerical sensor.
-    """
-    def __init__(self, sensor_ds):
-        """
-        Parameters
-        ----------
-        sensor_ds : pandas series
-            The pandas series for a single sensor.
-        """
-
-        self._sensor_ds = sensor_ds
-        self._name = sensor_ds.name + "_prediction"
-
-        sensor_df = self._sensor_ds.to_frame()  # Convert series to dataframe
-        sensor_df.reset_index(level=0, inplace=True)  # Convert index to col.
-        sensor_df.columns = ['ds', 'y']  # Rename cols.
-        self._sensor_df = sensor_df
-        return
-
-    def create_prophet_model(self, **kwargs):
-        """
-        Creates a prophet model.
-        Allows adjustment via keyword arguments
-        """
-        model = Prophet(**kwargs)
-        return model
-
-    def prophet_model(self, periods=0, freq='S', **kwargs):
-        """
-        Make a propet model for the given sensor for the number of periods.
-
-        Parameters
-        ----------
-
-        periods : int
-            The default period is 0 (no forecast)
-
-        freq : str
-            Unit of time, defaults to seconds.
-        """
-
-        # Create the model and fit on dataframe
-        model = self.create_prophet_model(**kwargs)
-        model.fit(self._sensor_df)
-
-        # Make a future dataframe for specified number of periods
-        future = model.make_future_dataframe(periods=periods, freq=freq)
-        future = model.predict(future)
-
-        self._model = model
-        self._future = future
-        return
-
-    def plot_future(self):
-        """Plot the prediction."""
-        self._model.plot(self._future).show()
-        return
-
-    def plot_components(self):
-        """Plot the prediction."""
-        self._model.plot_components(self._future).show()
-        return
-
-    @property
-    def name(self):
-        """Return the prediction name."""
-        return self._name
-
-    @property
-    def data(self):
-        """Return the prediction name."""
-        return self._sensor_df
