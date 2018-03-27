@@ -13,7 +13,7 @@ class HassDatabase():
     Initializing the parser fetches all of the data from the database and
     places it in a master pandas dataframe.
     """
-    def __init__(self, url):
+    def __init__(self, url, fetch_entities=True):
         """
         Parameters
         ----------
@@ -25,7 +25,8 @@ class HassDatabase():
         try:
             self._engine = create_engine(url)
             print("Successfully connected to {}".format(url))
-            self.fetch_entities()
+            if fetch_entities:
+                self.fetch_entities()
         except:
             print("Connection error, check your URL")
 
@@ -60,9 +61,58 @@ class HassDatabase():
             self._entities[d] = [
                 e for e in entities if e.split('.')[0] == d]
 
+    def fetch_data_by_list(self, *args):
+        """
+        Basic query from list of entities. Must be from same domain.
+        Attempts to unpack lists up to 2 deep.
+
+        Parameters
+        ----------
+        entities : single entity or list of entities
+            The entities to plot.
+
+        returns a df
+        """
+        entities = []
+        for arg in args:
+            entities += helpers.ensure_list(arg)
+
+        if not len(set([e.split('.')[0] for e in entities])) == 1:
+            print("Error: entities must be from same domain.")
+            return
+
+        if len(entities) == 1:
+            print("Must pass more than 1 entity.")
+            return
+        query = text(
+            """
+            SELECT entity_id, state, last_changed
+            FROM states
+            WHERE entity_id in {}
+            AND NOT state='unknown'
+            """.format(tuple(entities))
+            )
+
+        response = self.perform_query(query)
+        df = pd.DataFrame(response.fetchall())
+        df.columns = ['entity', 'state', 'last_changed']
+        df = df.set_index('last_changed')  # Set the index on datetime
+        df.index = pd.to_datetime(df.index)  # Convert string to datetime
+        try:
+            df['state'] = df['state'].mask(
+                df['state'].eq('None')).dropna().astype(float)
+            df = df.pivot_table(
+                index='last_changed', columns='entity', values='state')
+            df = df.fillna(method='ffill')
+            df = df.dropna()  # Drop any remaining nan.
+            return df
+        except:
+            print("Error: entities were not all numericalsm, unformatted df.")
+            return df
+
     def fetch_all_data(self):
-        """Fetch data for all enetities.
-        Returns the master_df
+        """
+        Fetch data for all enetites.
         """
         # Query text
         query = text(
@@ -79,11 +129,12 @@ class HassDatabase():
             master_df = pd.DataFrame(response.fetchall())
             print("master_df created successfully.")
             self._master_df = master_df.copy()
+            self.parse_all_data()
         except:
             raise ValueError("Error querying the database.")
 
     def parse_all_data(self):
-        """Parse the master df."""
+        """Parses the master df."""
         self._master_df.columns = [
             'domain', 'entity', 'state', 'last_changed']
 
@@ -114,7 +165,7 @@ class HassDatabase():
 
 class NumericalSensors():
     """
-    Class handling numerical sensor data.
+    Class handling numerical sensor data, acts on existing pandas dataframe.
     """
     def __init__(self, master_df):
         # Extract all the numerical sensors
@@ -169,7 +220,7 @@ class NumericalSensors():
     def plot(self, *args):
         """
         Basic plot of a numerical sensor data.
-        Attemptes to unpack lists up to 2 deep.
+        Attempts to unpack lists up to 2 deep.
 
         Parameters
         ----------
