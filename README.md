@@ -1,28 +1,6 @@
 Jupyter notebook [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/tree/master/usage) shows usage of the data detective package.
 
 
-Notebook showing usage of the data detective package.
-
-
-```python
-# To import detective from relative folder
-import os
-import sys
-module_path = os.path.abspath(os.path.join('..'))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
-import detective.core as detective
-import detective.helpers as helpers
-import numpy as np
-import pandas as pd
-pd.options.mode.chained_assignment = None  # Suppress chained_assignment warning, default='warn'
-import seaborn as sns
-from sqlalchemy import text
-import matplotlib.pyplot as plt
-%matplotlib inline
-```
-
 To load from a local db, we just need the path
 
 
@@ -178,19 +156,6 @@ df.head()
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -312,19 +277,6 @@ sensors_num_df.data.head()
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -520,19 +472,6 @@ corrs[(corrs['value'] > 0.8) | (corrs['value'] < -0.8)]
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -728,19 +667,6 @@ motion_df.head()
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -828,19 +754,6 @@ motion_df_gb
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
