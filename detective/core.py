@@ -82,16 +82,15 @@ class HassDatabase():
             return
 
         if len(entities) == 1:
-            entities_query = '({})'.format(entities[0])
-        else:
-            entities_query = tuple(entities)
+            print("Must pass more than 1 entity.")
+            return
         query = text(
             """
             SELECT entity_id, state, last_changed
             FROM states
             WHERE entity_id in {}
             AND NOT state='unknown'
-            """.format(entities_query)
+            """.format(tuple(entities))
             )
 
         response = self.perform_query(query)
