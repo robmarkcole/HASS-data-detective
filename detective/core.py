@@ -97,7 +97,7 @@ class HassDatabase():
         df = pd.DataFrame(response.fetchall())
         df.columns = ['entity', 'state', 'last_changed']
         df = df.set_index('last_changed')  # Set the index on datetime
-        df.index = pd.to_datetime(df.index)  # Convert string to datetime
+        df.index = pd.to_datetime(df.index, errors='ignore', utc=True)
         try:
             df['state'] = df['state'].mask(
                 df['state'].eq('None')).dropna().astype(float)
@@ -182,7 +182,8 @@ class NumericalSensors():
         sensors_num_df = sensors_num_df.pivot_table(
             index='last_changed', columns='entity', values='state')
 
-        sensors_num_df.index = pd.to_datetime(sensors_num_df.index)
+        sensors_num_df.index = pd.to_datetime(
+            sensors_num_df.index, errors='ignore', utc=True)
         sensors_num_df.index = sensors_num_df.index.tz_localize(None)
 
         # ffil data as triggered on events
@@ -270,7 +271,8 @@ class BinarySensors():
             index='last_changed', columns='entity', values='state')
 
         # Index to datetime
-        binary_df.index = pd.to_datetime(binary_df.index)
+        binary_df.index = pd.to_datetime(
+            binary_df.index, errors='ignore', utc=True)
         binary_df.index = binary_df.index.tz_localize(None)
 
         self._binary_df = binary_df.copy()
