@@ -1,4 +1,3 @@
-fbprophet >= 0.2.1
 json >= 2.0.9
 pandas >= 0.22.0
 sqlalchemy >= 1.1.13
