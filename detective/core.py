@@ -24,7 +24,7 @@ class HassDatabase():
         self._master_df = None
         try:
             self._engine = create_engine(url)
-            print("Successfully connected to {}".format(url))
+            print("Successfully connected to database")
             if fetch_entities:
                 self.fetch_entities()
         except:

@@ -68,6 +68,17 @@ def time_category(dtObj):
         return 'night'
 
 
+def load_credentials(credentials_filepath):
+    """Convenience to load db credentials from a json file, returns a dict."""
+    try:
+        with open(credentials_filepath, 'r') as fp:
+            credentials = json.load(fp)
+    except Exception as e:
+        print('Failed to load API secrets key: {}'.format(e))
+        credentials = None
+    return credentials
+
+
 def load_url(filename):
     """Convenience for loading a url from a json file."""
     try:
