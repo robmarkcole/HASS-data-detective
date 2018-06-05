@@ -123,7 +123,7 @@ df.plot(figsize=(16, 6));
 ```
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_13_0.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_13_0.png)
 
 
 ## Helper to query by list
@@ -536,7 +536,7 @@ sensors_num_df.plot('sensor.darksky_sensor_temperature')
 ```
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_32_0.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_32_0.png)
 
 
 We can pass a list of entities to plot:
@@ -551,7 +551,7 @@ sensors_num_df.plot(to_plot)
 ```
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_34_0.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_34_0.png)
 
 
 Even mix up lists and single entites
@@ -562,7 +562,7 @@ sensors_num_df.plot(to_plot, 'sensor.mean_temperature')
 ```
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_36_0.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_36_0.png)
 
 
 #### Pairplot
@@ -586,7 +586,7 @@ sns.pairplot(sensors_num_df.data[to_plot]);
 
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_38_2.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_38_2.png)
 
 
 ## Binary sensors
@@ -626,7 +626,7 @@ sensors_binary_df.plot('binary_sensor.motion_at_home')
 ```
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_43_0.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_43_0.png)
 
 
 ## Day of week analysis
@@ -842,4 +842,4 @@ ax.set_title('Activity at home by day and time category')
 
 
 
-![png](https://github.com/robmarkcole/HASS-data-detective/docs/images/output_54_1.png)
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_54_1.png)
