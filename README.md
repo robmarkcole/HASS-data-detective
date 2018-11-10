@@ -1,3 +1,8 @@
+
+## Installation
+You can either: `pip install HASS-data-detective` for the latest version from pypi, or clone this repo and install in editable mode with `pip install -e .`
+
+## Usage
 Jupyter notebook [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/tree/master/usage) shows usage of the data detective package. Examples can also be found in the repository https://github.com/robmarkcole/HASS-data-detective-analysis
 
 
