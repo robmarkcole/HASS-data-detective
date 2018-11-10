@@ -107,7 +107,7 @@ class HassDatabase():
             df = df.dropna()  # Drop any remaining nan.
             return df
         except:
-            print("Error: entities were not all numericalsm, unformatted df.")
+            print("Error: entities were not all numericals, unformatted df.")
             return df
 
     def fetch_all_data(self):
