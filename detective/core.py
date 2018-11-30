@@ -13,13 +13,24 @@ class HassDatabase():
     Initializing the parser fetches all of the data from the database and
     places it in a master pandas dataframe.
     """
-    def __init__(self, url, fetch_entities=True):
+    def __init__(self, url=None, hass_config_path=None, fetch_entities=True):
         """
         Parameters
         ----------
         url : str
             The URL to the database.
         """
+        if url is None:
+            if hass_config_path is None:
+                hass_config_path = helpers.find_hass_config()
+
+            if hass_config_path:
+                url = helpers.db_url_from_hass_config(hass_config_path)
+
+        if url is None:
+            raise ValueError('Unable to detect Home Assistant. '
+                             'Pass in `url` or `hass_config_path`')
+
         self._url = url
         self._master_df = None
         try:

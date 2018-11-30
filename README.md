@@ -27,10 +27,19 @@ Alternatively, to load from a cloud database we load from a json file containing
 
 We use the DataParser class to load data from the database. This class performs the SQL queries and parses the returned data. The class holds the master pandas dataframe master_df.
 
+If you are running under Hass.io or are using the default configuration path, `HassDatabase` will be able to automatically detect your database url. If not, you can pass in either the `url` or `hass_config_path`.
 
 ```python
 %%time
-db = detective.HassDatabase(DB_URL) # To init without fetching entities fetch_entities=False
+# Example invocations
+# Auto detect
+db = detective.HassDatabase()
+# using DB url
+db = detective.HassDatabase(url=DB_URL)
+# Using HASS config path
+db = detective.HassDatabase(hass_config_path='/home/homeassistant/config')
+# Auto detect and not prefetching entities
+db = detective.HassDatabase(fetch_entities=False)
 ```
 
     Successfully connected to sqlite:////Users/robincole/Documents/Home-assistant_database/home-assistant_v2.db
