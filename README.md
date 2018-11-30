@@ -31,15 +31,16 @@ If you are running under Hass.io or are using the default configuration path, `H
 
 ```python
 %%time
+from detective.core import HassDatabase
 # Example invocations
 # Auto detect
-db = detective.HassDatabase()
+db = HassDatabase()
 # using DB url
-db = detective.HassDatabase(url=DB_URL)
+db = HassDatabase(url=DB_URL)
 # Using HASS config path
-db = detective.HassDatabase(hass_config_path='/home/homeassistant/config')
+db = HassDatabase(hass_config_path='/home/homeassistant/config')
 # Auto detect and not prefetching entities
-db = detective.HassDatabase(fetch_entities=False)
+db = HassDatabase(fetch_entities=False)
 ```
 
     Successfully connected to sqlite:////Users/robincole/Documents/Home-assistant_database/home-assistant_v2.db
