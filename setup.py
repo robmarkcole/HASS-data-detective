@@ -13,7 +13,7 @@ REQUIRED = [
 
 setup(
     name='HASS-data-detective',
-    version='0.41',
+    version='0.5',
     packages=find_packages(exclude=('tests',)),
     url='https://github.com/robmarkcole/HASS-data-detective',
     keywords=['home', 'automation'],

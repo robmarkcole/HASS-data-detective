@@ -1,3 +1,4 @@
+[![PyPI Version](https://img.shields.io/pypi/v/HASS-data-detective.svg)](https://pypi.org/project/HASS-data-detective/)
 
 ## Installation
 You can either: `pip install HASS-data-detective` for the latest version from pypi, or clone this repo and install in editable mode with `pip install -e .`
