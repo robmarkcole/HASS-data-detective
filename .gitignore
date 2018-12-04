@@ -4,3 +4,6 @@ __pycache__/
 # Python venv
 bin/
 lib/
+
+HASS_data_detective.egg-info/*
+dist/*
