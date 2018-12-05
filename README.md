@@ -121,6 +121,43 @@ db.entities['sensor'][15:20]
 
 
 
+## Auth helpers
+
+When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
+
+```python
+from detective.auth import auth_from_hass_config
+
+auth = auth_from_hass_config()
+```
+
+```python
+auth.users
+```
+
+    {
+      "user-id": {
+        "id": "id of user",
+        "name": "Name of user",
+      }
+    }
+
+```python
+auth.refresh_tokens
+```
+
+    "refresh-token-id": {
+      "id": "id of token",
+      "user": "user object related to token",
+      "client_name": "Name of client that created token",
+      "client_id": "ID of client that created token",
+    }
+
+```python
+> auth.user_name('some-user-id')
+Paulus
+```
+
 ## Simple query
 
 Lets query a single sensor and demonstrate the data processing steps implemented by the library
@@ -865,33 +902,3 @@ ax.set_title('Activity at home by day and time category')
 
 
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_54_1.png)
-
-
-## Auth helpers
-
-When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
-
-```python
-from detective.helpers import auth_from_hass_config
-
-auth = auth_from_hass_config()
-```
-
-```python
-{
-    "users": {
-        "user-id": {
-            "id": "id of user",
-            "name": "Name of user",
-        }
-    },
-    "refresh_tokens_to_users": {
-        "refresh-token-id": {
-            "id": "id of token",
-            "user": "user object related to token",
-            "client_name": "Name of client that created token",
-            "client_id": "ID of client that created token",
-        }
-    }
-}
-```
