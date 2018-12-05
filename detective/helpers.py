@@ -111,7 +111,9 @@ def find_hass_config():
     if os.path.isdir(config_dir):
         return config_dir
 
-    return None
+    raise ValueError(
+        "Unable to automatically find the location of Home Assistant "
+        "config. Please pass it in.")
 
 
 class HassSafeConstructor(SafeConstructor):
@@ -176,3 +178,45 @@ def db_url_from_hass_config(path):
         return default
 
     return recorder.get('db_url', default)
+
+
+def auth_from_hass_config(path=None):
+    """Load the auth info from the hass config.
+
+    Returns object in shape
+    {
+        "users": {
+            "user-id": {
+                "id": "id of user",
+                "name": "Name of user",
+            }
+        },
+        "refresh_tokens_to_users": {
+            "refresh-token-id": {
+                "id": "id of token",
+                "user": "user object related to token",
+                "client_name": "Name of client that created token",
+                "client_id": "ID of client that created token",
+            }
+        }
+    }
+    """
+    if path is None:
+        path = find_hass_config()
+
+    with open(os.path.join(path, '.storage/auth')) as fp:
+        auth = json.load(fp)
+
+    users = {user['id']: user for user in auth['data']['users']}
+    refresh_tokens_to_users = {
+        token['id']: {
+            'id': token['id'],
+            'user': users[token['user_id']],
+            'client_name': token['client_name'],
+            'client_id': token['client_id'],
+        } for token in auth['data']['refresh_tokens']
+    }
+    return {
+        'users': users,
+        'refresh_tokens_to_users': refresh_tokens_to_users,
+    }
