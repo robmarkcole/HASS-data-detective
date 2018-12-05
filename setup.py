@@ -8,7 +8,12 @@ PROJECT_LONG_DESCRIPTION = ('Home Assistant is an open-source '
                             'in your Home-Assistant database. ')
 
 REQUIRED = [
-    'requests', 'matplotlib', 'pandas', 'sqlalchemy',
+    'matplotlib>=2.2.2',
+    'numpy>=1.14.3',
+    'pandas>=0.23.0',
+    'requests>=2.18.4',
+    'ruamel.yaml>=0.15.78',
+    'SQLAlchemy>=1.2.8',
 ]
 
 setup(
