@@ -55,9 +55,6 @@ By default, `HassDatabase` will query the database and list the avaialble domain
 db.domains
 ```
 
-
-
-
     ['persistent_notification',
      'remote',
      'script',
@@ -76,16 +73,11 @@ db.domains
      'updater',
      'sun']
 
-
-
 The attribute `entities` is a dictionary accessed via a domain name:
 
 ```python
 db.entities['binary_sensor']
 ```
-
-
-
 
     ['binary_sensor.motion_at_home',
      'binary_sensor.living_room_motion_sensor',
@@ -100,8 +92,7 @@ db.entities['binary_sensor']
 
 
 ### Simple query
-
-Note that at this point we still haven't downloaded any actual data. Lets query a single sensor using SQL and demonstrate the data processing steps implemented by detective:
+Note that at this point we still haven't downloaded any actual data. Lets query a single sensor using SQL and demonstrate the data formatting steps performed by detective:
 
 
 ```python
@@ -133,103 +124,8 @@ df.plot(figsize=(16, 6));
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_13_0.png)
 
 
-## Helper to query by list
-Use `fetch_data_by_list` to query a list of numerical entities, must be from same domain and a minimum of 2 entities must be in the list. Returns a pandas dataframe.
-
-
-```python
-db.fetch_data_by_list(db.entities['sensor'][15])
-```
-
-    Must pass more than 1 entity.
-
-
-
-```python
-%%time
-df = db.fetch_data_by_list(db.entities['sensor'][15:17])
-```
-
-    CPU times: user 159 ms, sys: 273 ms, total: 433 ms
-    Wall time: 1.42 s
-
-
-
-```python
-df.head()
-```
-
-
-
-
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>entity</th>
-      <th>sensor.hall_light_sensor</th>
-      <th>sensor.living_room_temperature</th>
-    </tr>
-    <tr>
-      <th>last_changed</th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2017-07-22 14:22:28.950795</th>
-      <td>6858.0</td>
-      <td>20.68</td>
-    </tr>
-    <tr>
-      <th>2017-07-22 14:22:29.053893</th>
-      <td>6858.0</td>
-      <td>20.68</td>
-    </tr>
-    <tr>
-      <th>2017-07-22 14:23:10.703517</th>
-      <td>6858.0</td>
-      <td>20.96</td>
-    </tr>
-    <tr>
-      <th>2017-07-22 14:26:59.745763</th>
-      <td>6334.0</td>
-      <td>20.96</td>
-    </tr>
-    <tr>
-      <th>2017-07-22 14:31:59.744730</th>
-      <td>5864.0</td>
-      <td>20.96</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-df['sensor.hall_light_sensor'].describe()
-```
-
-
-
-
-    count    23213.000000
-    mean      9263.393874
-    std       5984.677651
-    min          0.000000
-    25%       4895.000000
-    50%      10291.000000
-    75%      13142.000000
-    max      24845.000000
-    Name: sensor.hall_light_sensor, dtype: float64
-
-
-
 ## Query all data
-Data-detective takes care of parsing data from the database, intelligently sorting out numerical and categorical data and formatting them correctly. Use `fetch_all_data` to import all your db data into a pandas dataframe in memory -> this approach means it can take a while to load the data into memory, but subsequent processing and handling are much faster/easier.
+Detective takes care of formating raw data from the database into a format compatible with Pandas dataframes. Detective will intelligently sort out numerical and categorical data and format them correctly. Use `fetch_all_data` to import all your data into a Pandas dataframe in memory. **Note** that this approach means it can take a while to load the data into memory, but subsequent processing and handling are much faster and easier.
 
 
 ```python
@@ -242,7 +138,6 @@ db.fetch_all_data()
     CPU times: user 11.7 s, sys: 12.8 s, total: 24.4 s
     Wall time: 1min 1s
 
-
 The `NumericalSensors` class is for parsing the numerical data. Lets create a dataframe for the numerical sensor data
 
 
@@ -252,13 +147,9 @@ sensors_num_df = detective.NumericalSensors(db.master_df)
 
 We can access the list of sensor entities using the list_sensors attribute
 
-
 ```python
 sensors_num_df.entities[0:10]
 ```
-
-
-
 
     ['sensor.next_train_to_wat',
      'sensor.next_bus_to_new_malden',
@@ -271,17 +162,11 @@ sensors_num_df.entities[0:10]
      'sensor.next_train_in',
      'sensor.home_to_waterloo']
 
-
-
-Now lets look at the dataframe
-
+Now lets look at the dataframe which is on the `data` attribute:
 
 ```python
 sensors_num_df.data.head()
 ```
-
-
-
 
 <div>
 <table border="1" class="dataframe">
@@ -461,22 +346,13 @@ sensors_num_df.data.head()
 <p>5 rows × 52 columns</p>
 </div>
 
-
-
-Lets now check for correlations in the data using the all_corrs() method
-
+Lets check for correlations in the data:
 
 ```python
 corrs = sensors_num_df.correlations()
-```
 
-
-```python
 corrs[(corrs['value'] > 0.8) | (corrs['value'] < -0.8)]
 ```
-
-
-
 
 <div>
 <table border="1" class="dataframe">
@@ -529,25 +405,18 @@ corrs[(corrs['value'] > 0.8) | (corrs['value'] < -0.8)]
 
 
 
-Unsurprisingly the mean temperature is strongly correlated with all of the temperature sensors.
-
-Interestingly my iphone battery level is somewhat inversely correlated with the travel time from home to waterloo, which gets longer late at night when my battery level is more likely to be low.
+Unsurprisingly the mean temperature is strongly correlated with all of the temperature sensors. Interestingly my iphone battery level is somewhat inversely correlated with the travel time from home to waterloo, which gets longer late at night when my battery level is more likely to be low.
 
 #### Plot sensor data
-Convenience to plot a sensor data.
-Pass a single entity to plot:
-
+We can pass a single entity to plot:
 
 ```python
 sensors_num_df.plot('sensor.darksky_sensor_temperature')
 ```
 
-
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_32_0.png)
 
-
 We can pass a list of entities to plot:
-
 
 ```python
 to_plot = ['sensor.living_room_temperature',
@@ -557,60 +426,17 @@ to_plot = ['sensor.living_room_temperature',
 sensors_num_df.plot(to_plot)
 ```
 
-
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_34_0.png)
-
-
-Even mix up lists and single entites
-
-
-```python
-sensors_num_df.plot(to_plot, 'sensor.mean_temperature')
-```
-
-
-![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_36_0.png)
-
-
-#### Pairplot
-A seaborn pair plot to show correlations.
-
-
-```python
-%%time
-sns.pairplot(sensors_num_df.data[to_plot]);
-```
-
-    CPU times: user 3.74 s, sys: 110 ms, total: 3.85 s
-    Wall time: 3.85 s
-
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x13c61d4e0>
-
-
-
-
-![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_38_2.png)
 
 
 ## Binary sensors
 The `BinarySensors` class is for binary sensor data with on/off states.
 
-
 ```python
 sensors_binary_df = detective.BinarySensors(db.master_df)
-```
 
-
-```python
 sensors_binary_df.entities
 ```
-
-
-
 
     ['binary_sensor.workday_sensor',
      'binary_sensor.blink_blink_camera_percy_motion_enabled',
@@ -624,9 +450,7 @@ sensors_binary_df.entities
      'binary_sensor.in_bed_bayesian']
 
 
-
-Currently we can plot a single binary sensor with the plot() method
-
+ We can plot a single binary sensor with the plot() method
 
 ```python
 sensors_binary_df.plot('binary_sensor.motion_at_home')
@@ -638,40 +462,22 @@ sensors_binary_df.plot('binary_sensor.motion_at_home')
 
 ### Day of week analysis
 
-Lets analyse the **motion_at_home**, create some features for day of week and time category, then analyse motion by these features.
+Lets analyse the **motion_at_home** binary sensor data. We create some features for day of week and time category, then analyse motion by these features.
 
 
 ```python
 motion_df = sensors_binary_df.data[['binary_sensor.motion_at_home']] # Must pass a list to return correctly indexed df
-```
 
-
-```python
 motion_df['weekday'] = motion_df.index.weekday_name
-```
 
-
-```python
 motion_df['is_weekday'] = motion_df.index.map(lambda x: helpers.is_weekday(x))
-```
 
-
-```python
 motion_df = motion_df[motion_df['binary_sensor.motion_at_home'] == True] # Keep only true detection events
-```
 
-
-```python
 motion_df['time_category'] = motion_df.index.map(lambda x: helpers.time_category(x))
-```
 
-
-```python
 motion_df.head()
 ```
-
-
-
 
 <div>
 <table border="1" class="dataframe">
@@ -732,33 +538,22 @@ motion_df.head()
 </div>
 
 
-
-
 ```python
 motion_df['binary_sensor.motion_at_home'].groupby(motion_df['is_weekday']).describe()['count']
 ```
-
-
-
 
     is_weekday
     False     4452
     True     10862
     Name: count, dtype: object
 
-
-
-
 ```python
 motion_df_gb = motion_df['binary_sensor.motion_at_home'].groupby([motion_df['weekday'], motion_df['time_category']]).sum().unstack()
-motion_df_gb.fillna(value=0, inplace=True)   # Replace NaN with 0
-motion_df_gb = motion_df_gb.astype('int')              # Ints rather than floats
+motion_df_gb.fillna(value=0, inplace=True) # Replace NaN with 0
+motion_df_gb = motion_df_gb.astype('int') # Ints rather than floats
 motion_df_gb = motion_df_gb.T
 motion_df_gb
 ```
-
-
-
 
 <div>
 <table border="1" class="dataframe">
@@ -829,10 +624,12 @@ motion_df_gb
 </table>
 </div>
 
-
-
+#### Seaborn
+Seaborn is a python package for doing statistical plots. Unfortunately it is not yet supported on Hassio, but if you are on a Mac or PC you can use it like follows:
 
 ```python
+import seaborn as sns
+
 fig, ax = plt.subplots(figsize=(14, 6))
 days_list = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 times_list = ['morning', 'daytime', 'evening', 'night']
@@ -841,19 +638,20 @@ ax.set_title('Activity at home by day and time category')
 #fig.savefig('heatmap.jpg')
 ```
 
-
-
-
-    Text(0.5,1,'Activity at home by day and time category')
-
-
-
-
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_54_1.png)
+
+#### Pairplot
+A seaborn pair plot to show correlations.
+
+```python
+%%time
+sns.pairplot(sensors_num_df.data[to_plot]);
+```
+
+![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_38_2.png)
 
 
 ### Auth helpers
-
 When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
 
 ```python
