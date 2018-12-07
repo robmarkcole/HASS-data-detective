@@ -6,50 +6,44 @@ The `HASS-data-detective` package, which we may also refer to as 'detective' or 
 
 **Note** that not all python packages can be installed on Hassio yet - [scipy](https://github.com/scipy/scipy) is in this category. Notable packages which have scipy as a dependency include Seaborn.
 
-#### Installation
+## Installation
 You can either: `pip install HASS-data-detective` for the latest released version from pypi, or `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github. Alternatively if you wish to contribute to the development of detective, clone this repository and install in editable mode with `pip install -e .`
 
-## Load the db data
+## Initialise HassDatabase
 Detective first needs to know the location of your database in order to initialise the `HassDatabase` object which handles communication with your database. If you are using the default sqlite database and have the `home-assistant_v2.db` file locally just supply the path:
-
-```python
-db_path = 'path_to/home-assistant_v2.db'
-DB_URL = 'sqlite:////' + db_path
-db = detective.HassDatabase(DB_URL)
-```
-
-Alternatively if you are using detective on Hassio, there are two different ways to initialise the `HassDatabase`. The easiest is with `db_from_hass_config`. This will initialise a `HassDatabase` based on the the information found in your Home Assistant config folder. It is able to automatically detect the configuration directory if you're running under Hass.io or use the default Home Assistant configuration directory.
-
-```python
-from detective.core import db_from_hass_config
-
-# Auto detect
-db = db_from_hass_config()
-```
-
-Alternatively it's possible to pass the path in:
-```python
-# Pass in path to config
-db = db_from_hass_config("/home/homeassistant/config")
-```
-
-If you are running a databaser server for Home Assistant (e.g. mysql) and using this package on a different computer than the one that is running Home Assistant, you need to initialise the `HassDatabase` directly with [the correct connection string](https://www.home-assistant.io/components/recorder/#custom-database-engines):
 
 ```python
 from detective.core import HassDatabase
 
-# Using DB url
+db = detective.HassDatabase('sqlite:////' + 'path_to/home-assistant_v2.db')
+```
+
+If you are running a database server for Home Assistant (e.g. mysql) you need to initialise the `HassDatabase` directly with [the correct connection string](https://www.home-assistant.io/components/recorder/#custom-database-engines), for example:
+
+```python
 db = HassDatabase("mysql://scott:tiger@localhost/test")
 ```
 
-Initialisation of `HassDatabase` accepts keyword arguments to influence how the class is initialised:
+Alternatively if you are using detective on Hassio, there are two possible ways to initialise the `HassDatabase`. The easiest is with `db_from_hass_config`. This will initialise a `HassDatabase` based on the the information found in your Home Assistant config folder, which it will automatically discover:
+
+```python
+from detective.core import db_from_hass_config
+
+db = db_from_hass_config() # Auto detect
+```
+
+Alternatively it's possible to pass the path in:
+```python
+db = db_from_hass_config("/home/homeassistant/config") # Pass in path to config
+```
+
+Initialisation of `HassDatabase` accepts keyword arguments to influence how the object is initialised:
 
 | Argument | Description |
 | -------- | ----------- |
 | `fetch_entities` | Boolean to indicate if we should fetch the entities when constructing the database. If not, you will have to call `db.fetch_entities()` at a later stage before being able to use `self.entities` and `self.domains`.
 
-### Explore your data
-By default, `HassDatabase` will query the database and list the avaialble domains and entities in its `domains` and `entities` attributes:
+By default with `fetch_entities=True`, on initialisation `HassDatabase` will query the database and list the available domains and their entities in its `domains` and `entities` attributes:
 
 ```python
 db.domains
@@ -92,7 +86,7 @@ db.entities['binary_sensor']
 
 
 ### Simple query
-Note that at this point we still haven't downloaded any actual data. Lets query a single sensor using SQL and demonstrate the data formatting steps performed by detective:
+Note that at this point we still haven't downloaded any actual data. Lets query a single sensor using SQL and demonstrate the data formatting steps performed by detective, in order to convery raw data into a format suitable for plotting and analysing:
 
 
 ```python
@@ -124,9 +118,8 @@ df.plot(figsize=(16, 6));
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_13_0.png)
 
 
-## Query all data
-Detective takes care of formating raw data from the database into a format compatible with Pandas dataframes. Detective will intelligently sort out numerical and categorical data and format them correctly. Use `fetch_all_data` to import all your data into a Pandas dataframe in memory. **Note** that this approach means it can take a while to load the data into memory, but subsequent processing and handling are much faster and easier.
-
+## Fetch all raw data
+Use `fetch_all_data` to cache all your raw database data into a Pandas dataframe in memory. It is useful to keep this raw data in case you mess up your processed data and don't want to go through the process of fetching the raw data all over again.
 
 ```python
 %%time
@@ -138,10 +131,10 @@ db.fetch_all_data()
     CPU times: user 11.7 s, sys: 12.8 s, total: 24.4 s
     Wall time: 1min 1s
 
-We now have the raw data in a dataframe, and must use another class to format the data correctly for plotting and processing. There are seperate classes for numerical and binary sensors.
+We now have the raw data in a Pandas dataframe, and must use another class to process raw data into a format suitable for plotting and processing. There are separate classes for numerical and binary sensors, which allows them to both implement a `plot` method correctly.
 
 ## NumericalSensors class
-The `NumericalSensors` class is for parsing the numerical data. Lets create a dataframe for the numerical sensor data:
+The `NumericalSensors` class is for formatting numerical data. Create a dataframe with formatted numerical data like so:
 
 ```python
 sensors_num_df = detective.NumericalSensors(db.master_df)
@@ -164,7 +157,7 @@ sensors_num_df.entities[0:10]
      'sensor.next_train_in',
      'sensor.home_to_waterloo']
 
-Now lets look at the dataframe which is on the `data` attribute:
+Now lets look at the Pandas dataframe which is on the `data` attribute:
 
 ```python
 sensors_num_df.data.head()
@@ -404,8 +397,6 @@ corrs[(corrs['value'] > 0.8) | (corrs['value'] < -0.8)]
   </tbody>
 </table>
 </div>
-
-
 
 Unsurprisingly the mean temperature is strongly correlated with all of the temperature sensors. Interestingly my iphone battery level is somewhat inversely correlated with the travel time from home to waterloo, which gets longer late at night when my battery level is more likely to be low.
 
