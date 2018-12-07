@@ -111,7 +111,9 @@ def find_hass_config():
     if os.path.isdir(config_dir):
         return config_dir
 
-    return None
+    raise ValueError(
+        "Unable to automatically find the location of Home Assistant "
+        "config. Please pass it in.")
 
 
 class HassSafeConstructor(SafeConstructor):

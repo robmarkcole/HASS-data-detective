@@ -1,4 +1,5 @@
 [![PyPI Version](https://img.shields.io/pypi/v/HASS-data-detective.svg)](https://pypi.org/project/HASS-data-detective/)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robmarkcole/HASS-data-detective/master?filepath=usage%2FUsage%20of%20detective.ipynb)
 
 ## Installation
 You can either: `pip install HASS-data-detective` for the latest version from pypi, `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github, or clone this repo and install in editable mode with `pip install -e .`
@@ -26,30 +27,36 @@ Alternatively, to load from a cloud database we load from a json file containing
 
 ## Load the db data
 
-We use the DataParser class to load data from the database. This class performs the SQL queries and parses the returned data. The class holds the master pandas dataframe master_df.
-
-If you are running under Hass.io or are using the default configuration path, `HassDatabase` will be able to automatically detect your database url. If not, you can pass in either the `url` or `hass_config_path`.
+There are two different ways to initialize the HassDatabase. The easiest is with `db_from_hass_config`. This will initialize a HassDatabase based on the the information found in your Home Assistant config folder. It is able to automatically detect the configuration directiory if you're running under Hass.io or use the default Home Assistant configuration directory. It's also possible to pass the path in.
 
 ```python
-%%time
-from detective.core import HassDatabase
-# Example invocations
+from detective.core import db_from_hass_config
+
 # Auto detect
-db = HassDatabase()
-# using DB url
-db = HassDatabase(url=DB_URL)
-# Using HASS config path
-db = HassDatabase(hass_config_path='/home/homeassistant/config')
-# Auto detect and not prefetching entities
-db = HassDatabase(fetch_entities=False)
+db = db_from_hass_config()
+
+# Pass in path to config
+db = db_from_hass_config("/home/homeassistant/config")
 ```
 
-    Successfully connected to sqlite:////Users/robincole/Documents/Home-assistant_database/home-assistant_v2.db
-    There are 261 entities with data
-    CPU times: user 525 ms, sys: 2.44 s, total: 2.97 s
-    Wall time: 13.3 s
+If you are using this package on a different computer than the one that is running Home Assistant, you need to initialize the HassDatabase directly with the correct connection string.
 
+```python
+from detective.core import HassDatabase
 
+# Using DB url
+db = HassDatabase("mysql://scott:tiger@localhost/test")
+```
+
+Both invocations will use the DataParser class to load data from the database. This class performs the SQL queries and parses the returned data. The class holds the master pandas dataframe master_df.
+
+Both methods accept additional keyword arguments to influence how the class is initialized.
+
+| Argument | Description |
+| -------- | ----------- |
+| `fetch_entities` | Boolean to indicate if we should fetch the entities when constructing the database. If not, you will have to call `db.fetch_entities()` at a later stage before being able to use `self.entities` and `self.domains`.
+
+## Use the db data
 
 ```python
 db.domains
@@ -114,6 +121,43 @@ db.entities['sensor'][15:20]
      'sensor.living_room_light_sensor']
 
 
+
+## Auth helpers
+
+When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
+
+```python
+from detective.auth import auth_from_hass_config
+
+auth = auth_from_hass_config()
+```
+
+```python
+auth.users
+```
+
+    {
+      "user-id": {
+        "id": "id of user",
+        "name": "Name of user",
+      }
+    }
+
+```python
+auth.refresh_tokens
+```
+
+    "refresh-token-id": {
+      "id": "id of token",
+      "user": "user object related to token",
+      "client_name": "Name of client that created token",
+      "client_id": "ID of client that created token",
+    }
+
+```python
+> auth.user_name('some-user-id')
+Paulus
+```
 
 ## Simple query
 

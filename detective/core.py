@@ -8,46 +8,47 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 
 
+def db_from_hass_config(path=None, **kwargs):
+    """Initialize a database from HASS config."""
+    if path is None:
+        path = helpers.find_hass_config()
+
+    url = helpers.db_url_from_hass_config(path)
+    return HassDatabase(url, **kwargs)
+
+
 class HassDatabase():
     """
     Initializing the parser fetches all of the data from the database and
     places it in a master pandas dataframe.
     """
-    def __init__(self, url=None, hass_config_path=None, fetch_entities=True):
+    def __init__(self, url, *, fetch_entities=True):
         """
         Parameters
         ----------
         url : str
             The URL to the database.
         """
-        if url is None:
-            if hass_config_path is None:
-                hass_config_path = helpers.find_hass_config()
-
-            if hass_config_path:
-                url = helpers.db_url_from_hass_config(hass_config_path)
-
-        if url is None:
-            raise ValueError('Unable to detect Home Assistant. '
-                             'Pass in `url` or `hass_config_path`')
-
         self._url = url
         self._master_df = None
+        self._domains = None
+        self._entities = None
         try:
-            self._engine = create_engine(url)
+            self.engine = create_engine(url)
             print("Successfully connected to database")
             if fetch_entities:
                 self.fetch_entities()
         except:
             print("Connection error, check your URL")
+            raise
 
     def perform_query(self, query):
         """Perform a query, where query is a string."""
         try:
-            response = self._engine.execute(query)
-            return response
+            return self.engine.execute(query)
         except:
             print("Error with query: {}".format(query))
+            raise
 
     def fetch_entities(self):
         """Fetch unique entities which have data (COUNT>0)."""
@@ -136,7 +137,7 @@ class HassDatabase():
 
         try:
             print("Querying the database, this could take a while")
-            response = self._engine.execute(query)
+            response = self.engine.execute(query)
             master_df = pd.DataFrame(response.fetchall())
             print("master_df created successfully.")
             self._master_df = master_df.copy()
@@ -166,11 +167,17 @@ class HassDatabase():
     @property
     def domains(self):
         """Return the domains."""
+        if self._domains is None:
+            raise ValueError(
+                "Not initialized! Call entities.fetch_entities() first")
         return self._domains
 
     @property
     def entities(self):
         """Return the entities dict."""
+        if self._entities is None:
+            raise ValueError(
+                "Not initialized! Call entities.fetch_entities() first")
         return self._entities
 
 

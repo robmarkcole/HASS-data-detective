@@ -1,7 +1,10 @@
 """Tests for helpers package."""
+import json
 import os
 import tempfile
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
+
+import pytest
 
 from detective import helpers
 
@@ -18,8 +21,9 @@ def test_find_hass_config():
         assert helpers.find_hass_config() == 'default-dir'
 
     with patch.dict(os.environ, {}, clear=True), \
-            patch('os.path.isdir', return_value=False):
-        assert helpers.find_hass_config() is None
+            patch('os.path.isdir', return_value=False), \
+            pytest.raises(ValueError):
+        helpers.find_hass_config()
 
 
 def test_load_hass_config():
