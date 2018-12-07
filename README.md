@@ -15,6 +15,7 @@ Detective first needs to know the location of your database in order to initiali
 ```python
 db_path = 'path_to/home-assistant_v2.db'
 DB_URL = 'sqlite:////' + db_path
+db = detective.HassDatabase(DB_URL)
 ```
 
 Alternatively if you are using detective on Hassio, there are two different ways to initialise the `HassDatabase`. The easiest is with `db_from_hass_config`. This will initialise a `HassDatabase` based on the the information found in your Home Assistant config folder. It is able to automatically detect the configuration directory if you're running under Hass.io or use the default Home Assistant configuration directory.
@@ -48,6 +49,7 @@ Initialisation of `HassDatabase` accepts keyword arguments to influence how the 
 | `fetch_entities` | Boolean to indicate if we should fetch the entities when constructing the database. If not, you will have to call `db.fetch_entities()` at a later stage before being able to use `self.entities` and `self.domains`.
 
 ### Explore your data
+By default, `HassDatabase` will query the database and list the avaialble domains and entities in its `domains` and `entities` attributes:
 
 ```python
 db.domains
@@ -76,6 +78,7 @@ db.domains
 
 
 
+The attribute `entities` is a dictionary accessed via a domain name:
 
 ```python
 db.entities['binary_sensor']
@@ -96,25 +99,9 @@ db.entities['binary_sensor']
      'binary_sensor.bayesianbinary']
 
 
-
-
-```python
-db.entities['sensor'][15:20]
-```
-
-
-
-
-    ['sensor.living_room_temperature',
-     'sensor.hall_light_sensor',
-     'sensor.home_to_waterloo',
-     'sensor.work_to_home',
-     'sensor.living_room_light_sensor']
-
-
 ### Simple query
 
-Lets query a single sensor and demonstrate the data processing steps implemented by the library
+Note that at this point we still haven't downloaded any actual data. Lets query a single sensor using SQL and demonstrate the data processing steps implemented by detective:
 
 
 ```python
@@ -127,14 +114,21 @@ query = text(
     """
     )
 response = db.perform_query(query)
-df = pd.DataFrame(response.fetchall()) # Convert to dataframe
+
+df = pd.DataFrame(response.fetchall()) # Convert the response to a dataframe
+
 df.columns = ['state', 'last_changed'] # Set the columns
+
 df = df.set_index('last_changed') # Set the index on datetime
+
 df.index = pd.to_datetime(df.index) # Convert string to datetime
+
 df = df.mask(df.eq('None')).dropna().astype(float) #  Convert state strings to floats for plotting
+```
+We can then plot the data:
+```python
 df.plot(figsize=(16, 6));
 ```
-
 
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_13_0.png)
 
