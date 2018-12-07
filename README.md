@@ -138,14 +138,16 @@ db.fetch_all_data()
     CPU times: user 11.7 s, sys: 12.8 s, total: 24.4 s
     Wall time: 1min 1s
 
-The `NumericalSensors` class is for parsing the numerical data. Lets create a dataframe for the numerical sensor data
+We now have the raw data in a dataframe, and must use another class to format the data correctly for plotting and processing. There are seperate classes for numerical and binary sensors.
 
+## NumericalSensors class
+The `NumericalSensors` class is for parsing the numerical data. Lets create a dataframe for the numerical sensor data:
 
 ```python
 sensors_num_df = detective.NumericalSensors(db.master_df)
 ```
 
-We can access the list of sensor entities using the list_sensors attribute
+We can access the list of sensor entities using the `list_sensors` attribute
 
 ```python
 sensors_num_df.entities[0:10]
@@ -407,7 +409,7 @@ corrs[(corrs['value'] > 0.8) | (corrs['value'] < -0.8)]
 
 Unsurprisingly the mean temperature is strongly correlated with all of the temperature sensors. Interestingly my iphone battery level is somewhat inversely correlated with the travel time from home to waterloo, which gets longer late at night when my battery level is more likely to be low.
 
-#### Plot sensor data
+#### Plot numerical sensor data
 We can pass a single entity to plot:
 
 ```python
@@ -429,7 +431,7 @@ sensors_num_df.plot(to_plot)
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_34_0.png)
 
 
-## Binary sensors
+## BinarySensors class
 The `BinarySensors` class is for binary sensor data with on/off states.
 
 ```python
@@ -450,31 +452,30 @@ sensors_binary_df.entities
      'binary_sensor.in_bed_bayesian']
 
 
- We can plot a single binary sensor with the plot() method
+ We can plot a single binary sensor:
 
 ```python
 sensors_binary_df.plot('binary_sensor.motion_at_home')
 ```
 
-
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_43_0.png)
 
 
+OK now we have demonstrated the basic classes and functionality of detective, lets move on to some analysis!
+
 ### Day of week analysis
-
-Lets analyse the **motion_at_home** binary sensor data. We create some features for day of week and time category, then analyse motion by these features.
-
+Lets analyse the **motion_at_home** binary sensor data. We first create features from the raw data for the day-of-the-week and time categories, then perform analysis on these features.
 
 ```python
 motion_df = sensors_binary_df.data[['binary_sensor.motion_at_home']] # Must pass a list to return correctly indexed df
 
-motion_df['weekday'] = motion_df.index.weekday_name
+motion_df['weekday'] = motion_df.index.weekday_name # get the weekday name
 
-motion_df['is_weekday'] = motion_df.index.map(lambda x: helpers.is_weekday(x))
+motion_df['is_weekday'] = motion_df.index.map(lambda x: helpers.is_weekday(x)) # determine if day is a weekday or not
 
 motion_df = motion_df[motion_df['binary_sensor.motion_at_home'] == True] # Keep only true detection events
 
-motion_df['time_category'] = motion_df.index.map(lambda x: helpers.time_category(x))
+motion_df['time_category'] = motion_df.index.map(lambda x: helpers.time_category(x)) # Generate a time_category feature
 
 motion_df.head()
 ```
@@ -537,7 +538,7 @@ motion_df.head()
 </table>
 </div>
 
-
+Lets now do a [groupby](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.groupby.html) operation:
 ```python
 motion_df['binary_sensor.motion_at_home'].groupby(motion_df['is_weekday']).describe()['count']
 ```
@@ -549,9 +550,13 @@ motion_df['binary_sensor.motion_at_home'].groupby(motion_df['is_weekday']).descr
 
 ```python
 motion_df_gb = motion_df['binary_sensor.motion_at_home'].groupby([motion_df['weekday'], motion_df['time_category']]).sum().unstack()
+
 motion_df_gb.fillna(value=0, inplace=True) # Replace NaN with 0
+
 motion_df_gb = motion_df_gb.astype('int') # Ints rather than floats
+
 motion_df_gb = motion_df_gb.T
+
 motion_df_gb
 ```
 
@@ -624,6 +629,8 @@ motion_df_gb
 </table>
 </div>
 
+We see that there is a lot of activity on saturday mornings, when I hoover the house. We can also visualise this data using Seaborn.
+
 #### Seaborn
 Seaborn is a python package for doing statistical plots. Unfortunately it is not yet supported on Hassio, but if you are on a Mac or PC you can use it like follows:
 
@@ -639,17 +646,6 @@ ax.set_title('Activity at home by day and time category')
 ```
 
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_54_1.png)
-
-#### Pairplot
-A seaborn pair plot to show correlations.
-
-```python
-%%time
-sns.pairplot(sensors_num_df.data[to_plot]);
-```
-
-![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_38_2.png)
-
 
 ### Auth helpers
 When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
