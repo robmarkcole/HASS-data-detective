@@ -131,7 +131,7 @@ db.fetch_all_data()
     CPU times: user 11.7 s, sys: 12.8 s, total: 24.4 s
     Wall time: 1min 1s
 
-We now have the raw data in a Pandas dataframe, and must use another class to process raw data into a format suitable for plotting and processing. There are separate classes for numerical and binary sensors, which allows them to both implement a `plot` method correctly.
+We now have the raw data in a Pandas dataframe on the `master_df` attribute. We must use another class to process this data into a format suitable for plotting and processing. There are separate classes for numerical and binary sensors, which allows them to both implement a `plot` method correctly.
 
 ## NumericalSensors class
 The `NumericalSensors` class is for formatting numerical data. Create a dataframe with formatted numerical data like so:
@@ -140,7 +140,7 @@ The `NumericalSensors` class is for formatting numerical data. Create a datafram
 sensors_num_df = detective.NumericalSensors(db.master_df)
 ```
 
-We can access the list of sensor entities using the `list_sensors` attribute
+We can access the list of sensor entities:
 
 ```python
 sensors_num_df.entities[0:10]
