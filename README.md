@@ -1,45 +1,38 @@
 [![PyPI Version](https://img.shields.io/pypi/v/HASS-data-detective.svg)](https://pypi.org/project/HASS-data-detective/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robmarkcole/HASS-data-detective/master?filepath=usage%2FUsage%20of%20detective.ipynb)
 
-## Installation
-You can either: `pip install HASS-data-detective` for the latest version from pypi, `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github, or clone this repo and install in editable mode with `pip install -e .`
+## Introduction
+The `HASS-data-detective` package, which we may also refer to as 'detective' or 'data-detective', provides classes and functions to help you explore and analyse the data in your Home Assistant database. If you are using [Hassio](https://www.home-assistant.io/hassio/), it will automatically discover your sqlite database and by default collect information about the entities in your database. The recommended workflow is to then load the database content into a [Pandas dataframe](https://pandas.pydata.org/pandas-docs/version/0.23.4/generated/pandas.DataFrame.html) using the `fetch_all_data` method. This is recommended as all of the work of formatting the data for analysis is done up front, but it could take a couple of minutes. However if you have a very large database and cannot load it into a Pandas dataframe due to memory limits, you will have to adopt a different workflow where you query and process only the data you are interested in. [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/tree/master/usage) shows examples of using the detective with both of these workflows.
 
-## Usage
-Jupyter notebook [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/tree/master/usage) shows usage of the data detective package. Examples can also be found in the repository https://github.com/robmarkcole/HASS-data-detective-analysis
+**Note** that not all python packages can be installed on Hassio yet - [scipy](https://github.com/scipy/scipy) is in this category. Notable packages which have scipy as a dependency include Seaborn.
 
+#### Installation
+You can either: `pip install HASS-data-detective` for the latest released version from pypi, or `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github. Alternatively if you wish to contribute to the development of detective, clone this repository and install in editable mode with `pip install -e .`
 
-To load from a local db, we just need the path
-
+## Load the db data
+Detective first needs to know the location of your database in order to initialise the `HassDatabase` object which handles communication with your database. If you are using the default sqlite database and have the `home-assistant_v2.db` file locally just supply the path:
 
 ```python
-db_path = 'Users/robincole/Documents/Home-assistant_database/home-assistant_v2.db'
+db_path = 'path_to/home-assistant_v2.db'
 DB_URL = 'sqlite:////' + db_path
 ```
 
-Alternatively, to load from a cloud database we load from a json file containing the url as the url contains our credentials and we want to lkeep these a secret. To learn how the Google CLoud SQL recorder can be setup checkout https://github.com/robmarkcole/HASS-Google-Cloud-SQL
-
-
-```python
-# For cloud database with secret credentials, load from json. Time to load vaires, up to 3 mins.
-#filename = '/Users/robincole/Desktop/hass_db_url.json'
-#DB_URL = helpers.load_url(filename)
-```
-
-## Load the db data
-
-There are two different ways to initialize the HassDatabase. The easiest is with `db_from_hass_config`. This will initialize a HassDatabase based on the the information found in your Home Assistant config folder. It is able to automatically detect the configuration directiory if you're running under Hass.io or use the default Home Assistant configuration directory. It's also possible to pass the path in.
+Alternatively if you are using detective on Hassio, there are two different ways to initialise the `HassDatabase`. The easiest is with `db_from_hass_config`. This will initialise a `HassDatabase` based on the the information found in your Home Assistant config folder. It is able to automatically detect the configuration directory if you're running under Hass.io or use the default Home Assistant configuration directory.
 
 ```python
 from detective.core import db_from_hass_config
 
 # Auto detect
 db = db_from_hass_config()
+```
 
+Alternatively it's possible to pass the path in:
+```python
 # Pass in path to config
 db = db_from_hass_config("/home/homeassistant/config")
 ```
 
-If you are using this package on a different computer than the one that is running Home Assistant, you need to initialize the HassDatabase directly with the correct connection string.
+If you are running a databaser server for Home Assistant (e.g. mysql) and using this package on a different computer than the one that is running Home Assistant, you need to initialise the `HassDatabase` directly with [the correct connection string](https://www.home-assistant.io/components/recorder/#custom-database-engines):
 
 ```python
 from detective.core import HassDatabase
@@ -48,15 +41,13 @@ from detective.core import HassDatabase
 db = HassDatabase("mysql://scott:tiger@localhost/test")
 ```
 
-Both invocations will use the DataParser class to load data from the database. This class performs the SQL queries and parses the returned data. The class holds the master pandas dataframe master_df.
-
-Both methods accept additional keyword arguments to influence how the class is initialized.
+Initialisation of `HassDatabase` accepts keyword arguments to influence how the class is initialised:
 
 | Argument | Description |
 | -------- | ----------- |
 | `fetch_entities` | Boolean to indicate if we should fetch the entities when constructing the database. If not, you will have to call `db.fetch_entities()` at a later stage before being able to use `self.entities` and `self.domains`.
 
-## Use the db data
+### Explore your data
 
 ```python
 db.domains
@@ -121,45 +112,7 @@ db.entities['sensor'][15:20]
      'sensor.living_room_light_sensor']
 
 
-
-## Auth helpers
-
-When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
-
-```python
-from detective.auth import auth_from_hass_config
-
-auth = auth_from_hass_config()
-```
-
-```python
-auth.users
-```
-
-    {
-      "user-id": {
-        "id": "id of user",
-        "name": "Name of user",
-      }
-    }
-
-```python
-auth.refresh_tokens
-```
-
-    "refresh-token-id": {
-      "id": "id of token",
-      "user": "user object related to token",
-      "client_name": "Name of client that created token",
-      "client_id": "ID of client that created token",
-    }
-
-```python
-> auth.user_name('some-user-id')
-Paulus
-```
-
-## Simple query
+### Simple query
 
 Lets query a single sensor and demonstrate the data processing steps implemented by the library
 
@@ -689,7 +642,7 @@ sensors_binary_df.plot('binary_sensor.motion_at_home')
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_43_0.png)
 
 
-## Day of week analysis
+### Day of week analysis
 
 Lets analyse the **motion_at_home**, create some features for day of week and time category, then analyse motion by these features.
 
@@ -903,3 +856,41 @@ ax.set_title('Activity at home by day and time category')
 
 
 ![png](https://github.com/robmarkcole/HASS-data-detective/blob/master/docs/images/output_54_1.png)
+
+
+### Auth helpers
+
+When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
+
+```python
+from detective.auth import auth_from_hass_config
+
+auth = auth_from_hass_config()
+```
+
+```python
+auth.users
+```
+
+    {
+      "user-id": {
+        "id": "id of user",
+        "name": "Name of user",
+      }
+    }
+
+```python
+auth.refresh_tokens
+```
+
+    "refresh-token-id": {
+      "id": "id of token",
+      "user": "user object related to token",
+      "client_name": "Name of client that created token",
+      "client_id": "ID of client that created token",
+    }
+
+```python
+> auth.user_name('some-user-id')
+Paulus
+```
