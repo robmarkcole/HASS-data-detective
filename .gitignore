@@ -7,3 +7,5 @@ lib/
 
 HASS_data_detective.egg-info/*
 dist/*
+
+.pytest_cache/*
