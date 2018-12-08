@@ -6,24 +6,24 @@ from unittest.mock import patch, mock_open
 
 import pytest
 
-from detective import helpers
+from detective import functions
 
 
 def test_find_hass_config():
     """Test finding HASS config."""
     with patch.dict(os.environ, {'HASSIO_TOKEN': 'yo'}):
-        assert helpers.find_hass_config() == '/config'
+        assert functions.find_hass_config() == '/config'
 
     with patch.dict(os.environ, {}, clear=True), \
             patch('detective.helpers.default_hass_config_dir',
                   return_value='default-dir'), \
             patch('os.path.isdir', return_value=True):
-        assert helpers.find_hass_config() == 'default-dir'
+        assert functions.find_hass_config() == 'default-dir'
 
     with patch.dict(os.environ, {}, clear=True), \
             patch('os.path.isdir', return_value=False), \
             pytest.raises(ValueError):
-        helpers.find_hass_config()
+        functions.find_hass_config()
 
 
 def test_load_hass_config():
@@ -47,7 +47,7 @@ some_secret: test-some-secret
 other_secret: test-other-secret
         """)
 
-        config = helpers.load_hass_config(tmpdir)
+        config = functions.load_hass_config(tmpdir)
 
     assert config['mock_secret'] == 'test-other-secret'
 
@@ -55,7 +55,7 @@ other_secret: test-other-secret
 def test_db_url_from_hass_config():
     """Test extracting recorder url from config."""
     with patch('detective.helpers.load_hass_config', return_value={}):
-        assert helpers.db_url_from_hass_config('mock-path') == \
+        assert functions.db_url_from_hass_config('mock-path') == \
             'sqlite:///mock-path/home-assistant_v2.db'
 
     with patch('detective.helpers.load_hass_config', return_value={
@@ -63,4 +63,4 @@ def test_db_url_from_hass_config():
             'db_url': 'mock-url'
         }
     }):
-        assert helpers.db_url_from_hass_config('mock-path') == 'mock-url'
+        assert functions.db_url_from_hass_config('mock-path') == 'mock-url'

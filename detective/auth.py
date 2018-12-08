@@ -2,13 +2,13 @@
 import json
 import os
 
-from . import helpers
+from . import functions
 
 
 def auth_from_hass_config(path=None, **kwargs):
     """Initialize auth from HASS config."""
     if path is None:
-        path = helpers.find_hass_config()
+        path = functions.find_hass_config()
 
     return Auth(os.path.join(path, '.storage/auth'), **kwargs)
 

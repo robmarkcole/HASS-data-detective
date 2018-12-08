@@ -2,7 +2,7 @@
 Classes and functions for parsing home-assistant data.
 """
 
-from . import helpers
+from . import config, functions
 import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -12,9 +12,9 @@ from typing import List
 def db_from_hass_config(path=None, **kwargs):
     """Initialize a database from HASS config."""
     if path is None:
-        path = helpers.find_hass_config()
+        path = config.find_hass_config()
 
-    url = helpers.db_url_from_hass_config(path)
+    url = config.db_url_from_hass_config(path)
     return HassDatabase(url, **kwargs)
 
 
@@ -149,7 +149,7 @@ class HassDatabase():
 
         # Check if state is float and store in numericals category.
         self._master_df['numerical'] = self._master_df['state'].apply(
-            lambda x: helpers.isfloat(x))
+            lambda x: functions.isfloat(x))
 
         # Multiindexing
         self._master_df.set_index(
@@ -276,7 +276,7 @@ class BinarySensors():
 
         # Binarise
         binary_df['state'] = binary_df['state'].apply(
-            lambda x: helpers.binary_state(x))
+            lambda x: functions.binary_state(x))
 
         # Pivot
         binary_df = binary_df.pivot_table(
