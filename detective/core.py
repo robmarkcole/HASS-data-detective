@@ -6,6 +6,7 @@ from . import helpers
 import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
+from typing import List
 
 
 def db_from_hass_config(path=None, **kwargs):
@@ -73,21 +74,17 @@ class HassDatabase():
             self._entities[d] = [
                 e for e in entities if e.split('.')[0] == d]
 
-    def fetch_data_by_list(self, *args):
+    def fetch_data_by_list(self, entities: List[str]):
         """
         Basic query from list of entities. Must be from same domain.
         Attempts to unpack lists up to 2 deep.
 
         Parameters
         ----------
-        entities : single entity or list of entities
-            The entities to plot.
+        entities : a list of entities
 
         returns a df
         """
-        entities = []
-        for arg in args:
-            entities += helpers.ensure_list(arg)
 
         if not len(set([e.split('.')[0] for e in entities])) == 1:
             print("Error: entities must be from same domain.")
@@ -236,19 +233,16 @@ class NumericalSensors():
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
 
-    def plot(self, *args):
+    def plot(self, entities: List[str]):
         """
         Basic plot of a numerical sensor data.
         Attempts to unpack lists up to 2 deep.
 
         Parameters
         ----------
-        entities : single entity or list of entities
-            The entities to plot.
+        entities : a list of entities
         """
-        entities = []
-        for arg in args:
-            entities += helpers.ensure_list(arg)
+
         ax = self._sensors_num_df[entities].plot(figsize=[12, 6])
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         ax.set_xlabel('Date')
@@ -305,7 +299,7 @@ class BinarySensors():
         entity : string
             The entity to plot
         """
-        df = self._binary_df[helpers.ensure_list(entity)]
+        df = self._binary_df[[entity]]
         resampled = df.resample('s').ffill()  # Sample at seconds and ffill
         resampled.columns = ['value']
         fig, ax = plt.subplots(1, 1, figsize=(16, 2))
