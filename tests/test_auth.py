@@ -1,4 +1,4 @@
-"""Helpers for auth package."""
+"""Tests for auth package."""
 import json
 from unittest.mock import mock_open, patch
 

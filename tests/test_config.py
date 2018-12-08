@@ -1,7 +1,7 @@
 """Tests for config package."""
 import os
 import tempfile
-from unittest.mock import patch, mock_open
+from unittest.mock import patch
 
 import pytest
 
