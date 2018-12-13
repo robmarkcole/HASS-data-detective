@@ -14,6 +14,7 @@ REQUIRED = [
     'requests>=2.18.4',
     'ruamel.yaml>=0.15.78',
     'SQLAlchemy>=1.2.8',
+    'pytz',
 ]
 
 setup(
