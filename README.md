@@ -462,15 +462,17 @@ OK now we have demonstrated the basic classes and functionality of detective, le
 Lets analyse the **motion_at_home** binary sensor data. We first create features from the raw data for the day-of-the-week and time categories, then perform analysis on these features.
 
 ```python
+from detective.time is_weekday, time_category
+
 motion_df = sensors_binary_df.data[['binary_sensor.motion_at_home']] # Must pass a list to return correctly indexed df
 
 motion_df['weekday'] = motion_df.index.weekday_name # get the weekday name
 
-motion_df['is_weekday'] = motion_df.index.map(lambda x: helpers.is_weekday(x)) # determine if day is a weekday or not
+motion_df['is_weekday'] = motion_df.index.map(lambda x: is_weekday(x)) # determine if day is a weekday or not
 
 motion_df = motion_df[motion_df['binary_sensor.motion_at_home'] == True] # Keep only true detection events
 
-motion_df['time_category'] = motion_df.index.map(lambda x: helpers.time_category(x)) # Generate a time_category feature
+motion_df['time_category'] = motion_df.index.map(lambda x: time_category(x)) # Generate a time_category feature
 
 motion_df.head()
 ```
