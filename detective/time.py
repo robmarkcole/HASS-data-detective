@@ -41,8 +41,10 @@ def time_category(dtObj):
         return 'night'
 
 
-def sqlalch_datetime(dt_str):
+def sqlalch_datetime(dt):
     """Convert a SQLAlchemy datetime string to a datetime object."""
-    return datetime.strptime(
-        dt_str, '%Y-%m-%d %H:%M:%S.%f'
-    ).replace(tzinfo=UTC)
+    if isinstance(dt, str):
+        return datetime.strptime(
+            dt, '%Y-%m-%d %H:%M:%S.%f'
+        ).replace(tzinfo=UTC)
+    return dt
