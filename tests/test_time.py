@@ -8,6 +8,7 @@ from detective import time
 
 
 def test_sqlalch_datetime():
+    # a datetime string should return a datetime
     result = time.sqlalch_datetime('2018-12-05 10:36:44.900394')
     assert result.year == 2018
     assert result.month == 12
@@ -17,7 +18,11 @@ def test_sqlalch_datetime():
     assert result.second == 44
     assert result.microsecond == 900394
     assert result.tzinfo is time.UTC
-
+    
+    # a datetime should return a datetime
+    result2 = time.sqlalch_datetime(result)
+    assert result2 == result
+    
     with pytest.raises(ValueError):
         result = time.sqlalch_datetime('garbage')
 
