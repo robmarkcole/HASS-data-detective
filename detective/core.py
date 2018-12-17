@@ -265,9 +265,9 @@ class BinarySensors():
     Class handling binary sensor data.
     """
     def __init__(self, master_df):
-        # Extract all the numerical sensors
+        # Extract all the binary sensors with binary values
         binary_df = master_df.query(
-            'domain == "binary_sensor"')
+            'domain == "binary_sensor" & (state == "on" | state == "off")')
 
         # List of sensors
         entities = list(
