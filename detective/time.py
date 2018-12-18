@@ -47,4 +47,6 @@ def sqlalch_datetime(dt):
         return datetime.strptime(
             dt, '%Y-%m-%d %H:%M:%S.%f'
         ).replace(tzinfo=UTC)
-    return dt
+    if dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None:
+        return dt.astimezone(UTC)
+    dt.replace(tzinfo=pytz.UTC)
