@@ -74,7 +74,7 @@ class HassDatabase():
             self._entities[d] = [
                 e for e in entities if e.split('.')[0] == d]
 
-    def fetch_data_by_list(self, entities: List[str]):
+    def fetch_data_by_list(self, entities: List[str], limit=50000):
         """
         Basic query from list of entities. Must be from same domain.
         Attempts to unpack lists up to 2 deep.
@@ -99,7 +99,9 @@ class HassDatabase():
             FROM states
             WHERE entity_id in {}
             AND NOT state='unknown'
-            """.format(tuple(entities))
+            ORDER BY last_changed DESC
+            LIMIT {}
+            """.format(tuple(entities), limit)
             )
 
         response = self.perform_query(query)
@@ -119,7 +121,7 @@ class HassDatabase():
             print("Error: entities were not all numericals, unformatted df.")
             return df
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, limit=50000):
         """
         Fetch data for all enetites.
         """
@@ -129,7 +131,9 @@ class HassDatabase():
             SELECT domain, entity_id, state, last_changed
             FROM states
             WHERE NOT state='unknown'
-            """
+            ORDER BY last_changed DESC
+            LIMIT {}
+            """.format(limit)
             )
 
         try:
