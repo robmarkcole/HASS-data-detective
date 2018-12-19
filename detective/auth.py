@@ -10,7 +10,7 @@ def auth_from_hass_config(path=None, **kwargs):
     if path is None:
         path = config.find_hass_config()
 
-    return Auth(os.path.join(path, '.storage/auth'), **kwargs)
+    return Auth(os.path.join(path, ".storage/auth"), **kwargs)
 
 
 class Auth:
@@ -21,14 +21,15 @@ class Auth:
         with open(auth_path) as fp:
             auth = json.load(fp)
 
-        self.users = {user['id']: user for user in auth['data']['users']}
+        self.users = {user["id"]: user for user in auth["data"]["users"]}
         self.refresh_tokens = {
-            token['id']: {
-                'id': token['id'],
-                'user': self.users[token['user_id']],
-                'client_name': token['client_name'],
-                'client_id': token['client_id'],
-            } for token in auth['data']['refresh_tokens']
+            token["id"]: {
+                "id": token["id"],
+                "user": self.users[token["user_id"]],
+                "client_name": token["client_name"],
+                "client_id": token["client_id"],
+            }
+            for token in auth["data"]["refresh_tokens"]
         }
 
     def user_name(self, user_id):
@@ -38,4 +39,4 @@ class Auth:
         if user is None:
             return "Unknown user ({})".format(user_id)
 
-        return user['name']
+        return user["name"]

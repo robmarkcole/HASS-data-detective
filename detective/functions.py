@@ -5,12 +5,12 @@ Helper functions.
 
 def binary_state(value):
     """Return a binary for the state of binary sensors"""
-    if value == 'on':
+    if value == "on":
         return True
-    elif value == 'off':
+    elif value == "off":
         return False
     else:
-        return float('nan')
+        return float("nan")
 
 
 def isfloat(value):
