@@ -40,8 +40,8 @@ class HassDatabase:
             print("Successfully connected to database")
             if fetch_entities:
                 self.fetch_entities()
-        except:
-            print("Connection error, check your URL")
+        except Exception as exc:
+            print(exc)
             raise
 
     def perform_query(self, query):
