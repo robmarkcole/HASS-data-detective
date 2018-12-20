@@ -84,11 +84,18 @@ def load_hass_config(path):
 def db_url_from_hass_config(path):
     """Find the recorder database url from a HASS config dir."""
     config = load_hass_config(path)
-    default = "sqlite:///{}".format(os.path.join(path, "home-assistant_v2.db"))
+    default_path = os.path.join(path, "home-assistant_v2.db")
+    default_url = "sqlite:///{}".format(default_path)
 
     recorder = config.get("recorder")
 
-    if not recorder:
-        return default
+    if recorder:
+        db_url = recorder.get("db_url")
+        if db_url is not None:
+            return db_url
 
-    return recorder.get("db_url", default)
+    if not os.path.isfile(default_path):
+        raise ValueError(
+            "Unable to determine DB url from hass config at {}".format(path))
+
+    return default_url
