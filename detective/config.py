@@ -51,6 +51,7 @@ def _secret_yaml(loader, node):
 
 def _stub_dict(constructor, node):
     """Stub a constructor with a dictionary."""
+    print("Unsupported YAML found: {} {}".format(node.tag, node.value))
     return {}
 
 
