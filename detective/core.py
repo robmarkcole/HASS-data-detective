@@ -1,12 +1,14 @@
 """
 Classes and functions for parsing home-assistant data.
 """
+from urllib.parse import urlparse
+from typing import List
 
-from . import config, functions
 import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
-from typing import List
+
+from . import config, functions
 
 
 def db_from_hass_config(path=None, **kwargs):
@@ -16,6 +18,10 @@ def db_from_hass_config(path=None, **kwargs):
 
     url = config.db_url_from_hass_config(path)
     return HassDatabase(url, **kwargs)
+
+
+def get_db_type(url):
+    return urlparse(url).scheme.split('+')[0]
 
 
 class HassDatabase:
@@ -31,7 +37,8 @@ class HassDatabase:
         url : str
             The URL to the database.
         """
-        self._url = url
+        self.url = url
+
         self._master_df = None
         self._domains = None
         self._entities = None
@@ -43,6 +50,10 @@ class HassDatabase:
         except Exception as exc:
             print(exc)
             raise
+
+
+        self.db_type = get_db_type(url)
+
 
     def perform_query(self, query):
         """Perform a query, where query is a string."""
