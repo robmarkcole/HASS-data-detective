@@ -53,7 +53,18 @@ other_secret: test-other-secret
 
 def test_db_url_from_hass_config():
     """Test extracting recorder url from config."""
-    with patch('detective.config.load_hass_config', return_value={}):
+    with patch(
+        'detective.config.load_hass_config', return_value={}
+    ), patch(
+        'os.path.isfile', return_value=False
+    ), pytest.raises(ValueError):
+        config.db_url_from_hass_config('mock-path')
+
+    with patch(
+        'detective.config.load_hass_config', return_value={}
+    ), patch(
+        'os.path.isfile', return_value=True
+    ):
         assert config.db_url_from_hass_config('mock-path') == \
             'sqlite:///mock-path/home-assistant_v2.db'
 
