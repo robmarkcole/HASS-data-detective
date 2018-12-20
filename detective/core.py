@@ -41,6 +41,12 @@ class HassDatabase:
             if fetch_entities:
                 self.fetch_entities()
         except Exception as exc:
+            if isinstance(exc, ImportError):
+                raise RuntimeError(
+                    "The right dependency to connect to your database is "
+                    "missing. Please make sure that it is installed."
+                )
+
             print(exc)
             raise
 
