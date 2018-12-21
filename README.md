@@ -9,7 +9,7 @@ The `HASS-data-detective` package, which we may also refer to as 'detective' or 
 **Note** that not all python packages can be installed on Hassio yet - [scipy](https://github.com/scipy/scipy) is in this category. Notable packages which have scipy as a dependency include Seaborn.
 
 ## Try out detective online
-You can try out detective online without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the `usage.ipynb` notebook to explore detective, and you can also use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
+You can try out detective online without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the `Usage of detective` notebook to explore detective, and you can also use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
 
 ## Installation on you machine
 You can either: `pip install HASS-data-detective` for the latest released version from pypi, or `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github. Alternatively if you wish to contribute to the development of detective, clone this repository and install in editable mode with `pip install -e .`

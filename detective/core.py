@@ -295,6 +295,9 @@ class BinarySensors:
 
         # List of sensors
         entities = list(binary_df.index.get_level_values("entity").unique())
+        if len(entities) == 0:
+            print("No binary sensor data available")
+            return
         self._entities = entities
 
         # Binarise
