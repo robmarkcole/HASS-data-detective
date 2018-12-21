@@ -21,7 +21,7 @@ def db_from_hass_config(path=None, **kwargs):
 
 
 def get_db_type(url):
-    return urlparse(url).scheme.split('+')[0]
+    return urlparse(url).scheme.split("+")[0]
 
 
 class HassDatabase:
@@ -57,9 +57,7 @@ class HassDatabase:
             print(exc)
             raise
 
-
         self.db_type = get_db_type(url)
-
 
     def perform_query(self, query):
         """Perform a query, where query is a string."""

@@ -96,6 +96,7 @@ def db_url_from_hass_config(path):
 
     if not os.path.isfile(default_path):
         raise ValueError(
-            "Unable to determine DB url from hass config at {}".format(path))
+            "Unable to determine DB url from hass config at {}".format(path)
+        )
 
     return default_url

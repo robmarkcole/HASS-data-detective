@@ -2,3 +2,4 @@ pytest-timeout==1.3.2
 pytest==4.0.0
 ruamel.yaml==0.15.78
 pytz
+matplotlib==2.2.2
