@@ -71,10 +71,10 @@ class HassDatabase:
 
         self.db_type = get_db_type(url)
 
-    def perform_query(self, query):
+    def perform_query(self, query, **params):
         """Perform a query, where query is a string."""
         try:
-            return self.engine.execute(query)
+            return self.engine.execute(query, params)
         except:
             print("Error with query: {}".format(query))
             raise
@@ -126,16 +126,14 @@ class HassDatabase:
             """
             SELECT entity_id, state, last_changed
             FROM states
-            WHERE entity_id in {}
+            WHERE entity_id in ({})
             AND NOT state='unknown'
             ORDER BY last_changed DESC
-            LIMIT {}
-            """.format(
-                tuple(entities), limit
-            )
+            LIMIT :limit
+            """.format(','.join("'{}'".format(ent) for ent in entities))
         )
 
-        response = self.perform_query(query)
+        response = self.perform_query(query, limit=limit)
         df = pd.DataFrame(response.fetchall())
         df.columns = ["entity", "state", "last_changed"]
         df = df.set_index("last_changed")  # Set the index on datetime
@@ -154,24 +152,25 @@ class HassDatabase:
 
     def fetch_all_data(self, limit=50000):
         """
-        Fetch data for all enetites.
+        Fetch data for all entities.
         """
         # Query text
         query = text(
             """
             SELECT domain, entity_id, state, last_changed
             FROM states
-            WHERE NOT state='unknown'
+            WHERE
+                state NOT IN ('unknown', 'unavailable')
             ORDER BY last_changed DESC
-            LIMIT {}
-            """.format(
-                limit
-            )
+            LIMIT :limit
+            """
         )
 
         try:
             print("Querying the database, this could take a while")
-            response = self.engine.execute(query)
+            response = self.perform_query(
+                query, limit=limit
+            )
             master_df = pd.DataFrame(response.fetchall())
             print("master_df created successfully.")
             self._master_df = master_df.copy()
