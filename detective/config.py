@@ -49,25 +49,45 @@ def _secret_yaml(loader, node):
         raise ValueError("Secret {} not found".format(node.value)) from None
 
 
-def _stub_dict(constructor, node):
+def _include_yaml(loader, node):
+    """Load another YAML file and embeds it using the !include tag.
+
+    Example:
+        device_tracker: !include device_tracker.yaml
+    """
+    return load_yaml(os.path.join(os.path.dirname(loader.name), node.value))
+
+
+def _stub_tag(constructor, node):
     """Stub a constructor with a dictionary."""
-    print("Unsupported YAML found: {} {}".format(node.tag, node.value))
+    seen = getattr(constructor, '_stub_seen', None)
+
+    if seen is None:
+        seen = constructor._stub_seen = set()
+
+    if node.tag not in seen:
+        print("YAML tag {} is not supported".format(node.tag))
+        seen.add(node.tag)
+
     return {}
 
 
-HassSafeConstructor.add_constructor("!include", _stub_dict)
-HassSafeConstructor.add_constructor("!env_var", _stub_dict)
+HassSafeConstructor.add_constructor("!include", _include_yaml)
+HassSafeConstructor.add_constructor("!env_var", _stub_tag)
 HassSafeConstructor.add_constructor("!secret", _secret_yaml)
-HassSafeConstructor.add_constructor("!include_dir_list", _stub_dict)
-HassSafeConstructor.add_constructor("!include_dir_merge_list", _stub_dict)
-HassSafeConstructor.add_constructor("!include_dir_named", _stub_dict)
-HassSafeConstructor.add_constructor("!include_dir_merge_named", _stub_dict)
+HassSafeConstructor.add_constructor("!include_dir_list", _stub_tag)
+HassSafeConstructor.add_constructor("!include_dir_merge_list", _stub_tag)
+HassSafeConstructor.add_constructor("!include_dir_named", _stub_tag)
+HassSafeConstructor.add_constructor("!include_dir_merge_named", _stub_tag)
 
 
 def load_hass_config(path):
     """Load the HASS config."""
-    fname = os.path.join(path, "configuration.yaml")
+    return load_yaml(os.path.join(path, "configuration.yaml"))
 
+
+def load_yaml(fname):
+    """Load a YAML file."""
     yaml = YAML(typ="safe")
     # Compat with HASS
     yaml.allow_duplicate_keys = True
