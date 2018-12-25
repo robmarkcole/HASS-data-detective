@@ -212,6 +212,9 @@ class NumericalSensors:
         # List of sensors
         entities = list(sensors_num_df.index.get_level_values("entity").unique())
         self._entities = entities
+        if len(entities) == 0:
+            print("No sensor data available")
+            return
 
         # Pivot sensor dataframe for plotting
         sensors_num_df = sensors_num_df.pivot_table(
@@ -295,10 +298,10 @@ class BinarySensors:
 
         # List of sensors
         entities = list(binary_df.index.get_level_values("entity").unique())
+        self._entities = entities
         if len(entities) == 0:
             print("No binary sensor data available")
             return
-        self._entities = entities
 
         # Binarise
         binary_df["state"] = binary_df["state"].apply(
