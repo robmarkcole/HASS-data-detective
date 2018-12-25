@@ -80,26 +80,28 @@ class HassDatabase:
             raise
 
     def fetch_entities(self):
-        """Fetch unique entities which have data (COUNT>0)."""
+        """Fetch entities for which we have data."""
         query = text(
             """
-            SELECT entity_id, COUNT(*)
+            SELECT entity_id
             FROM states
             GROUP BY entity_id
-            ORDER by 2 DESC
             """
         )
         response = self.perform_query(query)
-        entities = [e[0] for e in list(response)]
-        print("There are {} entities with data".format(len(entities)))
 
         # Parse the domains from the entities.
-        self._domains = list(set([e.split(".")[0] for e in entities]))
-        self._entities = {}
+        entities = {}
+        domains = set()
 
-        # Parse entities into a dict indexed by domain.
-        for d in self._domains:
-            self._entities[d] = [e for e in entities if e.split(".")[0] == d]
+        for [entity] in response:
+            domain = entity.split('.')[0]
+            domains.add(domain)
+            entities.setdefault(domain, []).append(entity)
+
+        self._domains = list(domains)
+        self._entities = entities
+        print("There are {} entities with data".format(len(entities)))
 
     def fetch_data_by_list(self, entities: List[str], limit=50000):
         """
