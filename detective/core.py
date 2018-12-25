@@ -24,6 +24,18 @@ def get_db_type(url):
     return urlparse(url).scheme.split("+")[0]
 
 
+def stripped_db_url(url):
+    """Return a version of the DB url with the password stripped out."""
+    parsed = urlparse(url)
+
+    if parsed.password is None:
+        return url
+
+    return parsed._replace(
+        netloc="{}:***@{}".format(parsed.username, parsed.hostname)
+    ).geturl()
+
+
 class HassDatabase:
     """
     Initializing the parser fetches all of the data from the database and
@@ -44,7 +56,7 @@ class HassDatabase:
         self._entities = None
         try:
             self.engine = create_engine(url)
-            print("Successfully connected to database")
+            print("Successfully connected to database", stripped_db_url(url))
             if fetch_entities:
                 self.fetch_entities()
         except Exception as exc:
