@@ -31,6 +31,8 @@ def test_load_hass_config():
         with open(os.path.join(tmpdir, 'configuration.yaml'), 'wt') as fp:
             fp.write("""
 mock_secret: !secret some_secret
+included: !include included.yaml
+mock_env: !env_var MOCK_ENV
 mock_env: !env_var MOCK_ENV
 mock_dir_list: !include_dir_list ./zxc
 mock_dir_merge_list: !include_dir_merge_list ./zxc
@@ -46,9 +48,15 @@ some_secret: test-some-secret
 other_secret: test-other-secret
         """)
 
+        with open(os.path.join(tmpdir, 'included.yaml'), 'wt') as fp:
+            fp.write("""
+some: value
+        """)
+
         configuration = config.load_hass_config(tmpdir)
 
     assert configuration['mock_secret'] == 'test-other-secret'
+    assert configuration['included'] == {'some': 'value'}
 
 
 def test_db_url_from_hass_config():
