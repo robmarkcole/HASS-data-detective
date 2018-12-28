@@ -271,6 +271,24 @@ class NumericalSensors:
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
 
+    def export_to_csv(self, entities: List[str], filename='sensors.csv'):
+        """
+        Export selected sensor data to a csv.
+        
+        Parameters
+        ----------
+        filename : the name of the .csv file to create
+        entities : a list of numerical sensor entities
+        """
+        if not set(entities).issubset(set(self._sensors_num_df.columns.tolist())):
+            print("Invalid entities entered, aborting export_to_csv")
+            return
+        try:
+            self._sensors_num_df[entities].to_csv(path_or_buf=filename)
+            print(f"Successfully exported entered entities to {filename}")
+        except Exception as exc:
+            print(exc)
+
     def plot(self, entities: List[str]):
         """
         Basic plot of a numerical sensor data.
