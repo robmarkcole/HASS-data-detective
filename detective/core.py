@@ -95,7 +95,7 @@ class HassDatabase:
         domains = set()
 
         for [entity] in response:
-            domain = entity.split('.')[0]
+            domain = entity.split(".")[0]
             domains.add(domain)
             entities.setdefault(domain, []).append(entity)
 
@@ -130,7 +130,9 @@ class HassDatabase:
             AND NOT state='unknown'
             ORDER BY last_changed DESC
             LIMIT :limit
-            """.format(','.join("'{}'".format(ent) for ent in entities))
+            """.format(
+                ",".join("'{}'".format(ent) for ent in entities)
+            )
         )
 
         response = self.perform_query(query, limit=limit)
@@ -168,9 +170,7 @@ class HassDatabase:
 
         try:
             print("Querying the database, this could take a while")
-            response = self.perform_query(
-                query, limit=limit
-            )
+            response = self.perform_query(query, limit=limit)
             master_df = pd.DataFrame(response.fetchall())
             print("master_df created successfully.")
             self._master_df = master_df.copy()
@@ -270,6 +270,24 @@ class NumericalSensors:
         corrs_all = corrs_all.sort_values("value", ascending=False)
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
+
+    def export_to_csv(self, entities: List[str], filename="sensors.csv"):
+        """
+        Export selected sensor data to a csv.
+        
+        Parameters
+        ----------
+        filename : the name of the .csv file to create
+        entities : a list of numerical sensor entities
+        """
+        if not set(entities).issubset(set(self._sensors_num_df.columns.tolist())):
+            print("Invalid entities entered, aborting export_to_csv")
+            return
+        try:
+            self._sensors_num_df[entities].to_csv(path_or_buf=filename)
+            print(f"Successfully exported entered entities to {filename}")
+        except Exception as exc:
+            print(exc)
 
     def plot(self, entities: List[str]):
         """
