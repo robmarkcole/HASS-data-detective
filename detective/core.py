@@ -274,7 +274,6 @@ class NumericalSensors:
     def plot(self, entities: List[str]):
         """
         Basic plot of a numerical sensor data.
-        Attempts to unpack lists up to 2 deep.
 
         Parameters
         ----------
