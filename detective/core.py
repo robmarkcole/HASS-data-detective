@@ -95,7 +95,7 @@ class HassDatabase:
         domains = set()
 
         for [entity] in response:
-            domain = entity.split('.')[0]
+            domain = entity.split(".")[0]
             domains.add(domain)
             entities.setdefault(domain, []).append(entity)
 
@@ -130,7 +130,9 @@ class HassDatabase:
             AND NOT state='unknown'
             ORDER BY last_changed DESC
             LIMIT :limit
-            """.format(','.join("'{}'".format(ent) for ent in entities))
+            """.format(
+                ",".join("'{}'".format(ent) for ent in entities)
+            )
         )
 
         response = self.perform_query(query, limit=limit)
@@ -168,9 +170,7 @@ class HassDatabase:
 
         try:
             print("Querying the database, this could take a while")
-            response = self.perform_query(
-                query, limit=limit
-            )
+            response = self.perform_query(query, limit=limit)
             master_df = pd.DataFrame(response.fetchall())
             print("master_df created successfully.")
             self._master_df = master_df.copy()
@@ -271,7 +271,7 @@ class NumericalSensors:
         corrs_all = corrs_all.drop_duplicates()
         return corrs_all
 
-    def export_to_csv(self, entities: List[str], filename='sensors.csv'):
+    def export_to_csv(self, entities: List[str], filename="sensors.csv"):
         """
         Export selected sensor data to a csv.
         
