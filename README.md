@@ -20,7 +20,7 @@ Detective first needs to know the location of your database in order to initiali
 ```python
 from detective.core import HassDatabase
 
-db = detective.HassDatabase('sqlite:////' + 'path_to/home-assistant_v2.db')
+db = HassDatabase('sqlite:////' + 'path_to/home-assistant_v2.db') # on hassio path_to is config
 ```
 
 If you are running a database server for Home Assistant (e.g. mysql) you need to initialise the `HassDatabase` directly with [the correct connection string](https://www.home-assistant.io/components/recorder/#custom-database-engines), for example:
