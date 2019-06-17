@@ -463,7 +463,7 @@ OK now we have demonstrated the basic classes and functionality of detective, le
 Lets analyse the **motion_at_home** binary sensor data. We first create features from the raw data for the day-of-the-week and time categories, then perform analysis on these features.
 
 ```python
-from detective.time is_weekday, time_category
+from detective.time import is_weekday, time_category
 
 motion_df = sensors_binary_df.data[['binary_sensor.motion_at_home']] # Must pass a list to return correctly indexed df
 
@@ -634,6 +634,7 @@ Seaborn is a python package for doing statistical plots. Unfortunately it is not
 
 ```python
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots(figsize=(14, 6))
 days_list = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
