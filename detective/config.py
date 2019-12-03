@@ -60,7 +60,7 @@ def _include_yaml(loader, node):
 
 def _stub_tag(constructor, node):
     """Stub a constructor with a dictionary."""
-    seen = getattr(constructor, "_stub_seen", None)
+    seen = getattr(constructor, '_stub_seen', None)
 
     if seen is None:
         seen = constructor._stub_seen = set()
