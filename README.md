@@ -2,6 +2,7 @@
 [![build status](http://img.shields.io/travis/robmarkcole/HASS-data-detective/master.svg?style=flat)](https://travis-ci.org/robmarkcole/HASS-data-detective)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robmarkcole/HASS-data-detective/master?filepath=notebooks)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Sponsor](https://img.shields.io/badge/sponsor-%F0%9F%92%96-green)](https://github.com/sponsors/robmarkcole)
 
 ## Introduction
 The `HASS-data-detective` package, which we may also refer to as 'detective' or 'data-detective', provides classes and functions to help you explore and analyse the data in your Home Assistant database. If you are using [Hassio](https://www.home-assistant.io/hassio/), it will automatically discover your sqlite database and by default collect information about the entities in your database. The recommended workflow is to then load the database content into a [Pandas dataframe](https://pandas.pydata.org/pandas-docs/version/0.23.4/generated/pandas.DataFrame.html) using the `fetch_all_data` method. This is recommended as all of the work of formatting the data for analysis is done up front, but it could take a couple of minutes. However if you have a very large database and cannot load it into a Pandas dataframe due to memory limits, you will have to adopt a different workflow where you query and process only the data you are interested in. [Usage of detective.ipynb](https://github.com/robmarkcole/HASS-data-detective/tree/master/usage) shows examples of using the detective with both of these workflows.
@@ -681,3 +682,12 @@ auth.refresh_tokens
 > auth.user_name('some-user-id')
 Paulus
 ```
+
+## Contributors
+Big thanks to [@balloob](https://github.com/balloob) and [@frenck](https://github.com/frenck), checkout their profiles!
+
+## ✨ Support this work
+
+https://github.com/sponsors/robmarkcole
+
+If you or your business find this work useful please consider becoming a sponsor at the link above, this really helps justify the time I invest in maintaining this repo. As we say in England, 'every little helps' - thanks in advance! 
