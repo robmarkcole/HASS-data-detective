@@ -14,6 +14,7 @@ You can try out detective online without installing anything. If you click on th
 
 ## Installation on you machine
 You can either: `pip install HASS-data-detective` for the latest released version from pypi, or `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github. Alternatively if you wish to contribute to the development of detective, clone this repository and install in editable mode with `pip install -e .`
+Note that the HASS-data-detective pulls in 'matplotlib'  as dependency and that in turn will require 'libfreetype6-dev' to be present on systems with `aarch64` to build successfully.
 
 ## Initialise HassDatabase
 Detective first needs to know the location of your database in order to initialise the `HassDatabase` object which handles communication with your database. If you are using the default sqlite database and have the `home-assistant_v2.db` file locally just supply the path:
