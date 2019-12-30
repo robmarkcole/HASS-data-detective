@@ -1,21 +1,14 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    REQUIRED = f.read().splitlines()
+
 PROJECT_DESCRIPTION = ('Tools for studying Home-Assistant data.')
 PROJECT_LONG_DESCRIPTION = ('Home Assistant is an open-source '
                             'home automation platform running on Python 3. '
                             'This package provides a set of convenience '
                             'functions and classes to analyse the data '
                             'in your Home-Assistant database. ')
-
-REQUIRED = [
-    'matplotlib>=2.2.2',
-    'numpy>=1.14.3',
-    'pandas>=0.23.0',
-    'requests>=2.18.4',
-    'ruamel.yaml>=0.15.78',
-    'SQLAlchemy>=1.2.8',
-    'pytz',
-]
 
 setup(
     name='HASS-data-detective',
