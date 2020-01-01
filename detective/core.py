@@ -105,8 +105,7 @@ class HassDatabase:
         """
         Fetch data for all sensor entities.
         """
-        query = text(
-            """
+        query = f"""
             SELECT domain, entity_id, state, last_changed, attributes
             FROM states
             WHERE
@@ -116,16 +115,8 @@ class HassDatabase:
             AND
                 last_changed = last_updated
             ORDER BY last_changed DESC
-            LIMIT :limit
+            LIMIT {limit}
             """
-        )
-
-        response = self.perform_query(query, limit=limit)
-
-        columns = ["domain", "entity_id", "state", "last_changed", "attributes"]
-        df = pd.DataFrame(response.fetchall(), columns=columns)
-        df["attributes"] = df["attributes"].apply(
-            json.loads
-        )  # Convert json string to dict.
+        df = pd.read_sql_query(query, self.url)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
