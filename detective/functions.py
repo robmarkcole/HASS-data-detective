@@ -1,24 +1,21 @@
 """
 Helper functions.
 """
+UNKNOWN = "unknown"
 
 
-def binary_state(value):
-    """Return a binary for the state of binary sensors"""
-    if value == "on":
-        return True
-    elif value == "off":
-        return False
-    else:
-        return float("nan")
+def format_binary_state(state: str):
+    """Return a binary for the state of binary sensors."""
+    if state == "on":
+        return 1
+    elif state == "off":
+        return 0
+    return state
 
 
-def isfloat(value):
-    """
-    Check if string can be parsed to a float.
-    """
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
+def get_device_class(attributes: dict):
+    """Return the device class."""
+    device_class = attributes.get("device_class")
+    if device_class:
+        return device_class
+    return UNKNOWN

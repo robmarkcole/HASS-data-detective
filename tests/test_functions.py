@@ -1,15 +1,17 @@
 from detective import functions
 import math
 
-
-def test_binary_state():
-    """Test binary_state"""
-    assert functions.binary_state('on') is True
-    assert functions.binary_state('off') is False
-    assert math.isnan(functions.binary_state(None))
+MOCK_ATTRIBUTE = {"friendly_name": "Office sensor motion", "device_class": "motion"}
 
 
-def test_isfloat():
-    """Test isfloat"""
-    assert functions.isfloat(5.0) is True
-    assert functions.isfloat('foo') is False
+def test_format_binary_state():
+    """Test format_binary_state"""
+    assert functions.format_binary_state("on") == 1
+    assert functions.format_binary_state("off") == 0
+    assert functions.format_binary_state("foo") == "foo"
+
+
+def test_device_class():
+    """Test device_class"""
+    assert functions.get_device_class(MOCK_ATTRIBUTE) == "motion"
+    assert functions.get_device_class({}) == functions.UNKNOWN

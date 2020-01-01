@@ -5,7 +5,6 @@ from urllib.parse import urlparse
 import json
 from typing import List
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from sqlalchemy import create_engine, text
 
