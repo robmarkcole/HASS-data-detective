@@ -50,10 +50,8 @@ class HassDatabase:
             The URL to the database.
         """
         self.url = url
-
-        self._master_df = None
-        self._domains = None
-        self._entities = None
+        self.entities = None
+        self.domains = None
         try:
             self.engine = create_engine(url)
             print("Successfully connected to database", stripped_db_url(url))
@@ -98,118 +96,33 @@ class HassDatabase:
             domain = entity.split(".")[0]
             domains.add(domain)
             entities.setdefault(domain, []).append(entity)
+        print(f"There are {len(entities)} entities with data")
+        self.entities = entities
+        self.domains = domains
 
-        self._domains = list(domains)
-        self._entities = entities
-        print("There are {} entities with data".format(len(entities)))
-
-    def fetch_data_by_list(self, entities: List[str], limit=50000):
+    def fetch_all_sensor_data(self, limit=50000):
         """
-        Basic query from list of entities. Must be from same domain.
-        Attempts to unpack lists up to 2 deep.
-
-        Parameters
-        ----------
-        entities : a list of entities
-
-        returns a df
+        Fetch data for all sensor entities.
         """
-
-        if not len(set([e.split(".")[0] for e in entities])) == 1:
-            print("Error: entities must be from same domain.")
-            return
-
-        if len(entities) == 1:
-            print("Must pass more than 1 entity.")
-            return
         query = text(
             """
-            SELECT entity_id, state, last_changed
+            SELECT domain, entity_id, state, last_changed, attributes
             FROM states
-            WHERE entity_id in ({})
-            AND NOT state='unknown'
+            WHERE
+                domain IN ('binary_sensor', 'sensor')
+            AND
+                state NOT IN ('unknown', 'unavailable')
+            AND
+                last_changed = last_updated
             ORDER BY last_changed DESC
             LIMIT :limit
-            """.format(
-                ",".join("'{}'".format(ent) for ent in entities)
-            )
+            """
         )
 
         response = self.perform_query(query, limit=limit)
         df = pd.DataFrame(response.fetchall())
-        df.columns = ["entity", "state", "last_changed"]
-        df = df.set_index("last_changed")  # Set the index on datetime
-        df.index = pd.to_datetime(df.index, errors="ignore", utc=True)
-        try:
-            df["state"] = (
-                df["state"].mask(df["state"].eq("None")).dropna().astype(float)
-            )
-            df = df.pivot_table(index="last_changed", columns="entity", values="state")
-            df = df.fillna(method="ffill")
-            df = df.dropna()  # Drop any remaining nan.
-            return df
-        except:
-            print("Error: entities were not all numericals, unformatted df.")
-            return df
-
-    def fetch_all_data(self, limit=50000):
-        """
-        Fetch data for all entities.
-        """
-        # Query text
-        query = text(
-            """
-            SELECT domain, entity_id, state, last_changed
-            FROM states
-            WHERE
-                state NOT IN ('unknown', 'unavailable')
-            ORDER BY last_changed DESC
-            LIMIT :limit
-            """
-        )
-
-        try:
-            print("Querying the database, this could take a while")
-            response = self.perform_query(query, limit=limit)
-            master_df = pd.DataFrame(response.fetchall())
-            print("master_df created successfully.")
-            self._master_df = master_df.copy()
-            self.parse_all_data()
-        except:
-            raise ValueError("Error querying the database.")
-
-    def parse_all_data(self):
-        """Parses the master df."""
-        self._master_df.columns = ["domain", "entity", "state", "last_changed"]
-
-        # Check if state is float and store in numericals category.
-        self._master_df["numerical"] = self._master_df["state"].apply(
-            lambda x: functions.isfloat(x)
-        )
-
-        # Multiindexing
-        self._master_df.set_index(
-            ["domain", "entity", "numerical", "last_changed"], inplace=True
-        )
-
-    @property
-    def master_df(self):
-        """Return the dataframe holding numerical sensor data."""
-        return self._master_df
-
-    @property
-    def domains(self):
-        """Return the domains."""
-        if self._domains is None:
-            raise ValueError("Not initialized! Call entities.fetch_entities() first")
-        return self._domains
-
-    @property
-    def entities(self):
-        """Return the entities dict."""
-        if self._entities is None:
-            raise ValueError("Not initialized! Call entities.fetch_entities() first")
-        return self._entities
+        print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
+        return df
 
 
 class NumericalSensors:
@@ -274,7 +187,7 @@ class NumericalSensors:
     def export_to_csv(self, entities: List[str], filename="sensors.csv"):
         """
         Export selected sensor data to a csv.
-        
+
         Parameters
         ----------
         filename : the name of the .csv file to create
