@@ -52,7 +52,6 @@ class HassDatabase:
         """
         self.url = url
         self.entities = None
-        self.domains = None
         try:
             self.engine = create_engine(url)
             print("Successfully connected to database", stripped_db_url(url))
@@ -75,31 +74,22 @@ class HassDatabase:
         try:
             return self.engine.execute(query, params)
         except:
-            print("Error with query: {}".format(query))
+            print(f"Error with query: {query}")
             raise
 
     def fetch_entities(self) -> None:
         """Fetch entities for which we have data."""
         query = text(
             """
-            SELECT entity_id
-            FROM states
-            GROUP BY entity_id
+            SELECT DISTINCT(entity_id) FROM states
             """
         )
         response = self.perform_query(query)
 
         # Parse the domains from the entities.
-        entities = {}
-        domains = set()
-
-        for [entity] in response:
-            domain = entity.split(".")[0]
-            domains.add(domain)
-            entities.setdefault(domain, []).append(entity)
+        entities = [e[0] for e in response]
         print(f"There are {len(entities)} entities with data")
         self.entities = entities
-        self.domains = domains
 
     def fetch_all_sensor_data(self, limit=50000) -> pd.DataFrame:
         """

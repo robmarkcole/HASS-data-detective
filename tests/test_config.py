@@ -60,7 +60,7 @@ some: value
 
         configuration = config.load_hass_config(tmpdir)
 
-    # assert configuration['mock_secret'] == 'test-other-secret' # TODO: fix
+    assert configuration["mock_secret"] == "test-other-secret"  # TODO: fix
     assert configuration["included"] == {"some": "value"}
 
 
