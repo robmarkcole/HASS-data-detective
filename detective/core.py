@@ -2,9 +2,6 @@
 Classes and functions for parsing home-assistant data.
 """
 from urllib.parse import urlparse
-import json
-from typing import List
-
 import pandas as pd
 from sqlalchemy import create_engine, text
 
