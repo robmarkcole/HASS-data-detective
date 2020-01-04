@@ -1,5 +1,6 @@
 [![PyPI Version](https://img.shields.io/pypi/v/HASS-data-detective.svg)](https://pypi.org/project/HASS-data-detective/)
 [![build status](http://img.shields.io/travis/robmarkcole/HASS-data-detective/master.svg?style=flat)](https://travis-ci.org/robmarkcole/HASS-data-detective)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robmarkcole/HASS-data-detective/master?filepath=notebooks)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![Sponsor](https://img.shields.io/badge/sponsor-%F0%9F%92%96-green)](https://github.com/sponsors/robmarkcole)
 
@@ -21,6 +22,9 @@ Follow the URL printed to the terminal, which opens a Jupyter lab instance. Open
  ~/work$ pip install .
  ```
 You can now navigate to the notebooks directory and start using the detective package. Note that you can install any package you want from pypi, but they will not persist on restarting the container.
+
+## Try out detective online
+You can try out the latest version of detective from pypi without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the example notebook to explore detective, and use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
 
 ### Auth helpers
 When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
