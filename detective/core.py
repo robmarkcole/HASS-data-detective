@@ -83,9 +83,8 @@ class HassDatabase:
         response = self.perform_query(query)
 
         # Parse the domains from the entities.
-        entities = [e[0] for e in response]
-        print(f"There are {len(entities)} entities with data")
-        self.entities = entities
+        self.entities = [e[0] for e in response]
+        print(f"There are {len(self.entities)} entities with data")
 
     def fetch_all_sensor_data(self, limit=50000) -> pd.DataFrame:
         """
@@ -98,8 +97,6 @@ class HassDatabase:
                 domain IN ('binary_sensor', 'sensor')
             AND
                 state NOT IN ('unknown', 'unavailable')
-            AND
-                last_changed = last_updated
             ORDER BY last_changed DESC
             LIMIT {limit}
             """
