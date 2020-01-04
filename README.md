@@ -24,7 +24,7 @@ Follow the URL printed to the terminal, which opens a Jupyter lab instance. Open
 You can now navigate to the notebooks directory and start using the detective package. Note that you can install any package you want from pypi, but they will not persist on restarting the container.
 
 ## Try out detective online
-You can try out the latest version of detective from pypi without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the `Usage of detective` notebook to explore detective, and you can also use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
+You can try out the latest version of detective from pypi without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the example notebook to explore detective, and use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
 
 ### Auth helpers
 When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
