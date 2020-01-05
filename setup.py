@@ -1,7 +1,11 @@
 from setuptools import setup, find_packages
 
-with open("requirements.txt") as f:
-    REQUIRED = f.read().splitlines()
+REQUIRES = [
+    "pandas>=0.25.0",
+    "ruamel.yaml>=0.15.78",
+    "SQLAlchemy>=1.2.8",
+    "pytz",
+]
 
 PROJECT_DESCRIPTION = "Tools for studying Home-Assistant data."
 PROJECT_LONG_DESCRIPTION = (
@@ -14,7 +18,7 @@ PROJECT_LONG_DESCRIPTION = (
 
 setup(
     name="HASS-data-detective",
-    version="2.0",
+    version="2.1",
     packages=find_packages(exclude=("tests",)),
     url="https://github.com/robmarkcole/HASS-data-detective",
     keywords=["home", "automation"],
@@ -22,7 +26,7 @@ setup(
     author_email="robmarkcole@gmail.com",
     description=PROJECT_DESCRIPTION,
     long_description=PROJECT_LONG_DESCRIPTION,
-    install_requires=REQUIRED,
+    install_requires=REQUIRES,
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
