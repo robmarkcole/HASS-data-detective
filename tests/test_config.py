@@ -73,6 +73,7 @@ some: !secret another_secret
 
     # assert configuration["mock_secret"] == "test-other-secret"  # TODO: fix
     assert configuration["included"] == {"some": "value"}
+    assert configuration["nested_included"] == {"some": "test-another-secret"}
 
 
 def test_db_url_from_hass_config():
