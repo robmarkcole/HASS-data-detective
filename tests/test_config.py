@@ -1,6 +1,7 @@
 """Tests for config package."""
 import os
 import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -27,11 +28,13 @@ def test_find_hass_config():
 def test_load_hass_config():
     """Test loading hass config."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        with open(os.path.join(tmpdir, "configuration.yaml"), "wt") as fp:
+        p = Path(tmpdir)
+        with (p / "configuration.yaml").open("wt") as fp:
             fp.write(
                 """
 mock_secret: !secret some_secret
 included: !include included.yaml
+nested_included: !include includes/nested_included.yaml
 mock_env: !env_var MOCK_ENV
 mock_env: !env_var MOCK_ENV
 mock_dir_list: !include_dir_list ./zxc
@@ -43,18 +46,26 @@ mock_secret: !secret other_secret
         """
             )
 
-        with open(os.path.join(tmpdir, "secrets.yaml"), "wt") as fp:
+        with (p / "secrets.yaml").open("wt") as fp:
             fp.write(
                 """
 some_secret: test-some-secret
 other_secret: test-other-secret
+another_secret: test-another-secret
         """
             )
-
-        with open(os.path.join(tmpdir, "included.yaml"), "wt") as fp:
+        with (p / "included.yaml").open("wt") as fp:
             fp.write(
                 """
 some: value
+        """
+            )
+        includes_dir = p / "includes"
+        includes_dir.mkdir(exist_ok=True)
+        with (includes_dir / "nested_included.yaml").open("wt") as fp:
+            fp.write(
+                """
+some: !secret another_secret
         """
             )
 
@@ -84,4 +95,3 @@ def test_db_url_from_hass_config():
         return_value={"recorder": {"db_url": "mock-url"}},
     ):
         assert config.db_url_from_hass_config("mock-path") == "mock-url"
-
