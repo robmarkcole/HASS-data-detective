@@ -34,7 +34,8 @@ def test_load_hass_config():
                 """
 mock_secret: !secret some_secret
 included: !include included.yaml
-nested_included: !include includes/nested_included.yaml
+nested_with_secret: !include includes/with_secret.yaml
+nested_without_secret: !include includes/without_secret.yaml
 mock_env: !env_var MOCK_ENV
 mock_env: !env_var MOCK_ENV
 mock_dir_list: !include_dir_list ./zxc
@@ -55,25 +56,19 @@ another_secret: test-another-secret
         """
             )
         with (p / "included.yaml").open("wt") as fp:
-            fp.write(
-                """
-some: value
-        """
-            )
+            fp.write("some: value")
         includes_dir = p / "includes"
         includes_dir.mkdir(exist_ok=True)
-        with (includes_dir / "nested_included.yaml").open("wt") as fp:
-            fp.write(
-                """
-some: !secret another_secret
-        """
-            )
-
+        with (includes_dir / "with_secret.yaml").open("wt") as fp:
+            fp.write("some: !secret another_secret")
+        with (includes_dir / "without_secret.yaml").open("wt") as fp:
+            fp.write("some: value")
         configuration = config.load_hass_config(tmpdir)
 
     # assert configuration["mock_secret"] == "test-other-secret"  # TODO: fix
     assert configuration["included"] == {"some": "value"}
-    assert configuration["nested_included"] == {"some": "test-another-secret"}
+    assert configuration["nested_with_secret"] == {"some": "test-another-secret"}
+    assert configuration["nested_without_secret"] == {"some": "value"}
 
 
 def test_db_url_from_hass_config():
