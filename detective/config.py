@@ -2,6 +2,7 @@
 Helper functions for config.
 """
 import os
+from pathlib import Path
 
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import SafeConstructor
@@ -35,10 +36,20 @@ class HassSafeConstructor(SafeConstructor):
 
 def _secret_yaml(loader, node):
     """Load secrets and embed it into the configuration YAML."""
-    fname = os.path.join(os.path.dirname(loader.name), "secrets.yaml")
+    dirpath = Path(os.path.dirname(loader.name))
+
+    # Recursively search for the secrets.yaml file
+    # this might be needed when a yaml file is included like
+    # `!included folder/file.yaml`.
+    fname = dirpath / "secrets.yaml"
+    for _ in range(len(dirpath.parts)):
+        if fname.exists():
+            break
+        dirpath = dirpath.parent
+        fname = dirpath / "secrets.yaml"
 
     try:
-        with open(fname, encoding="utf-8") as secret_file:
+        with fname.open() as secret_file:
             secrets = YAML(typ="safe").load(secret_file)
     except FileNotFoundError:
         raise ValueError("Secrets file {} not found".format(fname)) from None
