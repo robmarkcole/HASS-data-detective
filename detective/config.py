@@ -3,9 +3,13 @@ Helper functions for config.
 """
 import os
 from pathlib import Path
+from typing import Optional
 
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import SafeConstructor
+
+
+_CONFIGURATION_PATH: Optional[Path] = None
 
 
 def default_hass_config_dir():
@@ -40,10 +44,15 @@ def _secret_yaml(loader, node):
 
     # Recursively search for the secrets.yaml file
     # this might be needed when a yaml file is included like
-    # `!included folder/file.yaml`.
+    # `!included folder/file.yaml`. Same rules as
+    # https://www.home-assistant.io/docs/configuration/secrets/#debugging-secrets
     fname = dirpath / "secrets.yaml"
     for _ in range(len(dirpath.parts)):
-        if fname.exists():
+        if fname.exists() or (
+            _CONFIGURATION_PATH is not None
+            and _CONFIGURATION_PATH.exists()
+            and dirpath.samefile(_CONFIGURATION_PATH)
+        ):
             break
         dirpath = dirpath.parent
         fname = dirpath / "secrets.yaml"
@@ -114,6 +123,8 @@ def load_yaml(fname):
 
 def db_url_from_hass_config(path):
     """Find the recorder database url from a HASS config dir."""
+    global _CONFIGURATION_PATH
+    _CONFIGURATION_PATH = Path(path).resolve()
     config = load_hass_config(path)
     default_path = os.path.join(path, "home-assistant_v2.db")
     default_url = "sqlite:///{}".format(default_path)
