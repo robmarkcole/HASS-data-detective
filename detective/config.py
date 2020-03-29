@@ -75,7 +75,19 @@ def _include_yaml(loader, node):
     Example:
         device_tracker: !include device_tracker.yaml
     """
-    return load_yaml(os.path.join(os.path.dirname(loader.name), node.value))
+    dirpath = Path(os.path.dirname(loader.name))
+    fname = dirpath / node.value
+    for _ in range(len(dirpath.parts)):
+        if fname.exists() or (
+            _CONFIGURATION_PATH is not None
+            and _CONFIGURATION_PATH.exists()
+            and dirpath.samefile(_CONFIGURATION_PATH)
+        ):
+            break
+        dirpath = dirpath.parent
+        fname = dirpath / node.value
+
+    return load_yaml(os.path.join(dirpath, node.value))
 
 
 def _stub_tag(constructor, node):
