@@ -2,7 +2,6 @@
 [![build status](http://img.shields.io/travis/robmarkcole/HASS-data-detective/master.svg?style=flat)](https://travis-ci.org/robmarkcole/HASS-data-detective)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robmarkcole/HASS-data-detective/master?filepath=notebooks)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![Sponsor](https://img.shields.io/badge/sponsor-%F0%9F%92%96-green)](https://github.com/sponsors/robmarkcole)
 
 ## Introduction
 The `HASS-data-detective` package provides classes and functions to help you explore and analyse the data in your Home Assistant database. If you are using [Hassio](https://www.home-assistant.io/hassio/), it will automatically discover your database and by default collect information about the entities in your database. See the notebooks directory for examples of using the detective package.
@@ -64,9 +63,3 @@ Paulus
 
 ## Contributors
 Big thanks to [@balloob](https://github.com/balloob) and [@frenck](https://github.com/frenck), checkout their profiles!
-
-## ✨ Support this work
-
-https://github.com/sponsors/robmarkcole
-
-If you or your business find this work useful please consider becoming a sponsor at the link above, this really helps justify the time I invest in maintaining this repo. As we say in England, 'every little helps' - thanks in advance!
