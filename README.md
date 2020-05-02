@@ -25,41 +25,5 @@ You can now navigate to the notebooks directory and start using the detective pa
 ## Try out detective online
 You can try out the latest version of detective from pypi without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the example notebook to explore detective, and use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
 
-### Auth helpers
-When querying the database, you might end up with user IDs and refresh token IDs. We've included a helper to help load the auth from Home Assistant and help you process this data.
-
-```python
-from detective.auth import auth_from_hass_config
-
-auth = auth_from_hass_config()
-```
-
-```python
-auth.users
-```
-
-    {
-      "user-id": {
-        "id": "id of user",
-        "name": "Name of user",
-      }
-    }
-
-```python
-auth.refresh_tokens
-```
-
-    "refresh-token-id": {
-      "id": "id of token",
-      "user": "user object related to token",
-      "client_name": "Name of client that created token",
-      "client_id": "ID of client that created token",
-    }
-
-```python
-> auth.user_name('some-user-id')
-Paulus
-```
-
 ## Contributors
 Big thanks to [@balloob](https://github.com/balloob) and [@frenck](https://github.com/frenck), checkout their profiles!
