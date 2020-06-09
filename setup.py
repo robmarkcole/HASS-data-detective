@@ -7,13 +7,13 @@ REQUIRES = [
     "pytz",
 ]
 
-PROJECT_DESCRIPTION = "Tools for studying Home-Assistant data."
+PROJECT_DESCRIPTION = "Tools for studying Home Assistant data."
 PROJECT_LONG_DESCRIPTION = (
     "Home Assistant is an open-source "
     "home automation platform running on Python 3. "
     "This package provides a set of convenience "
     "functions and classes to analyse the data "
-    "in your Home-Assistant database. "
+    "in your Home Assistant database. "
 )
 
 setup(
