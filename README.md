@@ -4,7 +4,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 ## Introduction
-The `HASS-data-detective` package provides classes and functions to help you explore and analyse the data in your Home Assistant database. If you are using [Hassio](https://www.home-assistant.io/hassio/), it will automatically discover your database and by default collect information about the entities in your database. See the notebooks directory for examples of using the detective package.
+The `HASS-data-detective` package provides classes and functions to help you explore and analyse the data in your Home Assistant database. If you are using [Home Assistant (former Hass.io)](https://www.home-assistant.io/hassio/), it will automatically discover your database and by default collect information about the entities in your database. See the notebooks directory for examples of using the detective package.
 
 ## Installation on your machine
 You can either: `pip install HASS-data-detective` for the latest released version from pypi, or `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github. Note that due to the matplotlib dependency, libfreetype6-dev is a requirement on `aarch64` platforms (i.e. RPi).
