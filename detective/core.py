@@ -1,6 +1,8 @@
 """
 Classes and functions for parsing home-assistant data.
 """
+from typing import Tuple
+
 from urllib.parse import urlparse
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -95,6 +97,28 @@ class HassDatabase:
             FROM states
             WHERE
                 domain IN ('binary_sensor', 'sensor')
+            AND
+                state NOT IN ('unknown', 'unavailable')
+            ORDER BY last_changed DESC
+            LIMIT {limit}
+            """
+        df = pd.read_sql_query(query, self.url)
+        print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
+        return df
+
+    def fetch_all_data_of(self, sensors: Tuple[str], limit=50000) -> pd.DataFrame:
+        """
+        Fetch data for sensors.
+        """
+        sensors_str = str(tuple(sensors))
+        if len(sensors) == 1:
+            sensors_str = sensors_str.replace(",", "")
+
+        query = f"""
+            SELECT domain, entity_id, state, last_changed, attributes
+            FROM states
+            WHERE
+                entity_id IN {sensors_str}
             AND
                 state NOT IN ('unknown', 'unavailable')
             ORDER BY last_changed DESC
