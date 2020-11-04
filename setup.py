@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 REQUIRES = [
-    "pandas>=0.25.0",
+    "pandas>=1.1.4",
     "ruamel.yaml>=0.15.78",
     "SQLAlchemy>=1.2.8",
     "pytz",
@@ -18,7 +18,7 @@ PROJECT_LONG_DESCRIPTION = (
 
 setup(
     name="HASS-data-detective",
-    version="2.3",
+    version="2.4",
     packages=find_packages(exclude=("tests",)),
     url="https://github.com/robmarkcole/HASS-data-detective",
     keywords=["home", "automation"],

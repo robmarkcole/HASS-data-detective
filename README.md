@@ -25,5 +25,17 @@ You can now navigate to the notebooks directory and start using the detective pa
 ## Try out detective online
 You can try out the latest version of detective from pypi without installing anything. If you click on the 'launch binder' button above, detective will be started in a Docker container online using the [Binderhub](https://binderhub.readthedocs.io) service. Run the example notebook to explore detective, and use the `Upload` button to upload your own `home-assistant_v2.db` database file for analysis. Note that all data is deleted when the container closes down, so this service is just for trying out detective.
 
+## Development
+* Create a venv: `python3 -m venv venv`
+* Activate venv: `source venv/bin/activate`
+* Install requirements: `pip3 install -r requirements.txt`
+* Install detective in development mode: `pip3 install -e .`
+* Optional install Jupyter to run the notebooks: `pip3 install jupyterlab`
+* Run jupyter, ensuring from venv: `venv/bin/jupyter lab`
+
+### Running tests
+* Install dependencies: `pip3 install -r requirements_test.txt`
+* Run: `pytest .`
+
 ## Contributors
 Big thanks to [@balloob](https://github.com/balloob) and [@frenck](https://github.com/frenck), checkout their profiles!
