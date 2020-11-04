@@ -33,5 +33,9 @@ You can try out the latest version of detective from pypi without installing any
 * Optional install Jupyter to run the notebooks: `pip3 install jupyterlab`
 * Run jupyter, ensuring from venv: `venv/bin/jupyter lab`
 
+### Running tests
+* Install dependencies: `pip3 install -r requirements_test.txt`
+* Run: `pytest .`
+
 ## Contributors
 Big thanks to [@balloob](https://github.com/balloob) and [@frenck](https://github.com/frenck), checkout their profiles!
