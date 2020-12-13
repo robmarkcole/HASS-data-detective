@@ -1,6 +1,8 @@
 """
 Classes and functions for parsing home-assistant data.
 """
+from typing import Tuple
+
 from urllib.parse import urlparse
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -89,6 +91,10 @@ class HassDatabase:
     def fetch_all_sensor_data(self, limit=50000) -> pd.DataFrame:
         """
         Fetch data for all sensor entities.
+        
+        Arguments:
+        - limit (default: 50000): Limit the maximum number of state changes loaded.
+            If None, there is no limit.
         """
         query = f"""
             SELECT domain, entity_id, state, last_changed, attributes
@@ -98,8 +104,34 @@ class HassDatabase:
             AND
                 state NOT IN ('unknown', 'unavailable')
             ORDER BY last_changed DESC
-            LIMIT {limit}
             """
+        if limit is not None: query += f'LIMIT {limit}'
+        df = pd.read_sql_query(query, self.url)
+        print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
+        return df
+
+    def fetch_all_data_of(self, sensors: Tuple[str], limit=50000) -> pd.DataFrame:
+        """
+        Fetch data for sensors.
+        
+        Arguments:
+        - limit (default: 50000): Limit the maximum number of state changes loaded.
+            If None, there is no limit.
+        """
+        sensors_str = str(tuple(sensors))
+        if len(sensors) == 1:
+            sensors_str = sensors_str.replace(",", "")
+
+        query = f"""
+            SELECT domain, entity_id, state, last_changed, attributes
+            FROM states
+            WHERE
+                entity_id IN {sensors_str}
+            AND
+                state NOT IN ('unknown', 'unavailable')
+            ORDER BY last_changed DESC
+            """
+        if limit is not None: query += f'LIMIT {limit}'
         df = pd.read_sql_query(query, self.url)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
