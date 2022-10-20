@@ -18,7 +18,7 @@ PROJECT_LONG_DESCRIPTION = (
 
 setup(
     name="HASS-data-detective",
-    version="2.4",
+    version="2.5",
     packages=find_packages(exclude=("tests",)),
     url="https://github.com/robmarkcole/HASS-data-detective",
     keywords=["home", "automation"],
