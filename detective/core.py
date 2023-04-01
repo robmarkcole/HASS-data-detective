@@ -109,11 +109,12 @@ class HassDatabase:
                 states_meta.entity_id  LIKE '%sensor%'
             AND
                 states.state NOT IN ('unknown', 'unavailable')
-            ORDER BY last_updated DESC
+            ORDER BY last_updated_ts DESC
         """
 
         if limit is not None:
             query += f"LIMIT {limit}"
+        print(query)
         query = text(query)
         df = pd.read_sql_query(query, con=self.con)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
@@ -133,20 +134,24 @@ class HassDatabase:
             sensors_str = sensors_str.replace(",", "")
 
         query = f"""
-            SELECT states.state, states.last_updated_ts, states_meta.entity_id
-            FROM states
-            JOIN states_meta
-            ON states.metadata_id = states_meta.metadata_id
-            WHERE
-                states.entity_id IN {sensors_str}
+            WITH combined_states AS (
+                SELECT states.state, states.last_updated_ts, states_meta.entity_id
+                FROM states
+                JOIN states_meta
+                ON states.metadata_id = states_meta.metadata_id
+            )
+            SELECT *
+            FROM combined_states
+            WHERE 
+                entity_id IN {sensors_str}
             AND
-                states.state NOT IN ('unknown', 'unavailable')
-            ORDER BY last_updated DESC
+                state NOT IN ('unknown', 'unavailable')
+            ORDER BY last_updated_ts DESC
         """
 
         if limit is not None:
             query += f"LIMIT {limit}"
-
+        print(query)
         query = text(query)
         df = pd.read_sql_query(query, con=self.con)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
