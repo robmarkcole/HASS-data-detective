@@ -30,7 +30,7 @@ You can try out the latest version of detective from pypi without installing any
 * Install requirements: `pip3 install -r requirements.txt`
 * Install detective in development mode: `pip3 install -e .`
 * Install Jupyterlab to run the notebooks: `pip3 install jupyterlab`
-* Open the `start-here.ipynb` notebook
+* Open the notebook at `notebooks/Getting started with detective.ipynb`
 
 ### Running tests
 * Install dependencies: `pip3 install -r requirements_test.txt`
