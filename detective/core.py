@@ -53,6 +53,7 @@ class HassDatabase:
         try:
             self.engine = create_engine(url)
             print("Successfully connected to database", stripped_db_url(url))
+            self.con = self.engine.connect()
             if fetch_entities:
                 self.fetch_entities()
         except Exception as exc:
@@ -70,7 +71,8 @@ class HassDatabase:
     def perform_query(self, query, **params):
         """Perform a query."""
         try:
-            return self.engine.execute(query, params)
+            with self.engine.connect() as conn:
+                return conn.execute(query, params)
         except:
             print(f"Error with query: {query}")
             raise
@@ -79,7 +81,7 @@ class HassDatabase:
         """Fetch entities for which we have data."""
         query = text(
             """
-            SELECT DISTINCT(entity_id) FROM states
+            SELECT DISTINCT(entity_id) FROM states_meta
             """
         )
         response = self.perform_query(query)
@@ -88,7 +90,7 @@ class HassDatabase:
         self.entities = [e[0] for e in response]
         print(f"There are {len(self.entities)} entities with data")
 
-    def fetch_all_sensor_data(self, limit=50000, get_attributes=False) -> pd.DataFrame:
+    def fetch_all_sensor_data(self, limit=50000) -> pd.DataFrame:
         """
         Fetch data for all sensor entities.
 
@@ -97,38 +99,28 @@ class HassDatabase:
             If None, there is no limit.
         - get_attributes: If True, LEFT JOIN the attributes table to retrieve event's attributes.
         """
-        
-        if get_attributes:
-            query = """
-                SELECT entity_id, state, last_updated, shared_attrs
-            """
-        else:
-            query = """
-                SELECT entity_id, state, last_updated
-            """
-        
-        query += "FROM states"
-        
-        if get_attributes:
-            query += """
-                LEFT JOIN state_attributes ON states.attributes_id = state_attributes.attributes_id
-            """
-            
-        query += """
+
+        query = """
+            SELECT states.state, states.last_updated_ts, states_meta.entity_id
+            FROM states
+            JOIN states_meta
+            ON states.metadata_id = states_meta.metadata_id
             WHERE
-                entity_id  LIKE '%sensor%'
+                states_meta.entity_id  LIKE '%sensor%'
             AND
-                state NOT IN ('unknown', 'unavailable')
-            ORDER BY last_updated DESC
-            """
-        
+                states.state NOT IN ('unknown', 'unavailable')
+            ORDER BY last_updated_ts DESC
+        """
+
         if limit is not None:
             query += f"LIMIT {limit}"
-        df = pd.read_sql_query(query, self.url)
+        print(query)
+        query = text(query)
+        df = pd.read_sql_query(query, con=self.con)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
 
-    def fetch_all_data_of(self, sensors: Tuple[str], limit=50000, get_attributes=False) -> pd.DataFrame:
+    def fetch_all_data_of(self, sensors: Tuple[str], limit=50000) -> pd.DataFrame:
         """
         Fetch data for sensors.
 
@@ -141,33 +133,26 @@ class HassDatabase:
         if len(sensors) == 1:
             sensors_str = sensors_str.replace(",", "")
 
-        if get_attributes:
-            query = """
-                SELECT entity_id, state, last_updated, shared_attrs
-            """
-        else:
-            query = """
-                SELECT entity_id, state, last_updated
-            """
-
-        query += "FROM states"
-        
-        if get_attributes:
-            query += """
-                LEFT JOIN state_attributes ON states.attributes_id = state_attributes.attributes_id
-            """
-            
-        query += f"""
-            WHERE
+        query = f"""
+            WITH combined_states AS (
+                SELECT states.state, states.last_updated_ts, states_meta.entity_id
+                FROM states
+                JOIN states_meta
+                ON states.metadata_id = states_meta.metadata_id
+            )
+            SELECT *
+            FROM combined_states
+            WHERE 
                 entity_id IN {sensors_str}
             AND
                 state NOT IN ('unknown', 'unavailable')
-            ORDER BY last_updated DESC
-            """
+            ORDER BY last_updated_ts DESC
+        """
 
         if limit is not None:
             query += f"LIMIT {limit}"
-            
-        df = pd.read_sql_query(query, self.url)
+        print(query)
+        query = text(query)
+        df = pd.read_sql_query(query, con=self.con)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
