@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 REQUIRES = [
     "pandas>=1.1.4",
     "ruamel.yaml>=0.15.78",
-    "SQLAlchemy>=1.2.8",
+    "SQLAlchemy>=2.0.7",
     "pytz",
 ]
 
