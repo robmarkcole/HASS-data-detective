@@ -70,7 +70,8 @@ class HassDatabase:
     def perform_query(self, query, **params):
         """Perform a query."""
         try:
-            return self.engine.execute(query, params)
+            with self.engine.connect() as conn:
+                return conn.execute(query, params)
         except:
             print(f"Error with query: {query}")
             raise
@@ -79,7 +80,7 @@ class HassDatabase:
         """Fetch entities for which we have data."""
         query = text(
             """
-            SELECT DISTINCT(entity_id) FROM states
+            SELECT DISTINCT(entity_id) FROM states_meta
             """
         )
         response = self.perform_query(query)

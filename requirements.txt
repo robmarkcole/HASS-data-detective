@@ -1,4 +1,4 @@
 pandas>=1.1.4
 ruamel.yaml>=0.15.78
-SQLAlchemy>=1.2.8
+sqlalchemy==2.0.7
 pytz
