@@ -3,10 +3,13 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 ## Introduction
-The `HASS-data-detective` package provides classes and functions to help you explore and analyse the data in your [Home Assistant)](https://www.home-assistant.io/) database. If you are running `HASS-data-detective` on a machine with Home Assistant installed, it will automatically discover your database and by default collect information about the entities in your database. See the notebooks directory for examples of using the detective package. If you are on a Raspberry pi use the official [JupyterLab add-on.](https://data.home-assistant.io/docs/quick-start/) which includes `HASS-data-detective`.
+The `HASS-data-detective` package helps you explore and analyse the data in your [Home Assistant)](https://www.home-assistant.io/) database. If you are running `HASS-data-detective` on a machine with Home Assistant installed, it will automatically discover your database and by default collect information about the entities in your database. See the notebooks directory for examples of using the detective package. If you are on a Raspberry pi you should use the official [JupyterLab add-on](https://data.home-assistant.io/docs/quick-start/) which includes `HASS-data-detective`
 
 ## Installation on your machine
 You can either: `pip install HASS-data-detective` for the latest released version from pypi, or `pip install git+https://github.com/robmarkcole/HASS-data-detective.git --upgrade` for the bleeding edge version from github. Note that due to the matplotlib dependency, libfreetype6-dev is a requirement on `aarch64` platforms (i.e. RPi).
+
+## Which version to install
+Version 3.0 requires the existence of a `states_meta` table which is not present in older Home Assistant databases. If you get the error `(sqlite3.OperationalError) no such table: states_meta` then you should install the earlier release with `pip install HASS-data-detective==2.6`
 
 ## Run with Docker locally
 You can use the detective package within a Docker container so there is no need to install anything on your machine (assuming you already have docker installed). Note this will pull the [jupyter/scipy-notebook](https://github.com/jupyter/docker-stacks/blob/master/scipy-notebook/Dockerfile) docker image the first time you run it, but subsequent runs will be much faster. Note there is no image available for Raspberry pi.
