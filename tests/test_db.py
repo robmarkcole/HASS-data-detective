@@ -14,3 +14,6 @@ def test_db():
 
     df = db.fetch_all_sensor_data(limit=100000)
     assert df is not None
+
+    df = db.fetch_all_statistics_of(("sensor.kitchen", "sensor.living_room", "sensor.ac"), limit=100000)
+    assert df is not None

@@ -156,3 +156,53 @@ class HassDatabase:
         df = pd.read_sql_query(query, con=self.con)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
+
+    def fetch_all_statistics_of(self, sensors: Tuple[str], limit=50000) -> pd.DataFrame:
+        """
+        Fetch aggregated statistics for sensors.
+
+        Arguments:
+        - limit (default: 50000): Limit the maximum number of state changes loaded.
+            If None, there is no limit.
+        """
+        # Statistics imported from an external source are similar to entity_id,
+        # but use a : instead of a . as a delimiter between the domain and object ID.
+        sensors_with_semicolons = [sensor.replace('.', ':') for sensor in sensors]
+        sensors_combined = list(sensors) + sensors_with_semicolons
+        sensors_str = str(tuple(sensors_combined))
+        if len(sensors_combined) == 1:
+            sensors_str = sensors_str.replace(",", "")
+
+        query = f"""
+            WITH combined_states AS (
+                SELECT
+                    statistics.created_ts,
+                    statistics.start_ts,
+                    statistics.last_reset_ts,
+                    statistics.mean,
+                    statistics.max,
+                    statistics.sum,
+                    statistics.state,
+                    statistics_meta.statistic_id,
+                    statistics_meta.source,
+                    statistics_meta.unit_of_measurement,
+                    statistics_meta.has_mean,
+                    statistics_meta.has_sum
+                FROM statistics
+                JOIN statistics_meta
+                ON statistics.metadata_id = statistics_meta.id
+            )
+            SELECT *
+            FROM combined_states
+            WHERE 
+                statistic_id IN {sensors_str}
+            ORDER BY created_ts DESC
+        """
+
+        if limit is not None:
+            query += f"LIMIT {limit}"
+        print(query)
+        query = text(query)
+        df = pd.read_sql_query(query, con=self.con)
+        print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
+        return df
