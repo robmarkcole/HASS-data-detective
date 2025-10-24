@@ -101,15 +101,17 @@ class HassDatabase:
         """
 
         query = """
-            SELECT states.state, states.last_updated_ts, states_meta.entity_id
-            FROM states
-            JOIN states_meta
-            ON states.metadata_id = states_meta.metadata_id
-            WHERE
-                states_meta.entity_id  LIKE '%sensor%'
-            AND
-                states.state NOT IN ('unknown', 'unavailable')
-            ORDER BY last_updated_ts DESC
+        SELECT states.state,
+            datetime(states.last_updated_ts, 'unixepoch', 'subsec') as last_updated_ts,
+            states_meta.entity_id,
+            state_attributes.shared_attrs
+        FROM states
+        JOIN states_meta ON states.metadata_id = states_meta.metadata_id
+        LEFT JOIN state_attributes ON states.attributes_id = state_attributes.attributes_id
+        WHERE states_meta.entity_id LIKE '%sensor%'
+        AND states.state NOT IN ('unknown',
+                                'unavailable')
+        ORDER BY last_updated_ts DESC
         """
 
         if limit is not None:
