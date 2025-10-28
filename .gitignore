@@ -12,4 +12,5 @@ dist/*
 .idea/*
 
 venv*
+.venv*
 tests/test.db-*
