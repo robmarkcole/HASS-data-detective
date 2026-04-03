@@ -1,13 +1,13 @@
 """
 Helper functions for config.
 """
+
 import os
 from pathlib import Path
 from typing import Optional
 
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import SafeConstructor
-
 
 _CONFIGURATION_PATH: Optional[Path] = None
 

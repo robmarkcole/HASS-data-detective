@@ -1,8 +1,9 @@
 """
 Helper functions for datetimes.
 """
-from datetime import datetime
+
 import time
+from datetime import datetime
 
 import pytz
 
@@ -11,9 +12,10 @@ UTC = pytz.UTC
 TIME_CATEGORIES = ["morning", "daytime", "evening", "night"]
 
 # To localize the returned UTC times to local times
-LOCAL_UTC_OFFSET = datetime.fromtimestamp(time.time()) - datetime.utcfromtimestamp(
-    time.time()
-)
+_now_ts = time.time()
+LOCAL_UTC_OFFSET = datetime.fromtimestamp(_now_ts) - datetime.fromtimestamp(
+    _now_ts, UTC
+).replace(tzinfo=None)
 
 
 def localize(dt):

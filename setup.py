@@ -18,7 +18,7 @@ PROJECT_LONG_DESCRIPTION = (
 
 setup(
     name="HASS-data-detective",
-    version="3.2",
+    version="3.3",
     packages=find_packages(exclude=("tests",)),
     url="https://github.com/robmarkcole/HASS-data-detective",
     keywords=["home", "automation"],
@@ -27,6 +27,7 @@ setup(
     description=PROJECT_DESCRIPTION,
     long_description=PROJECT_LONG_DESCRIPTION,
     install_requires=REQUIRES,
+    python_requires=">=3.12,<3.13",
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -35,5 +36,6 @@ setup(
         "Natural Language :: English",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.12",
     ],
 )
