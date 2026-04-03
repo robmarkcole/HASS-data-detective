@@ -27,6 +27,7 @@ setup(
     description=PROJECT_DESCRIPTION,
     long_description=PROJECT_LONG_DESCRIPTION,
     install_requires=REQUIRES,
+    python_requires=">=3.12,<3.13",
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -35,5 +36,6 @@ setup(
         "Natural Language :: English",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.12",
     ],
 )
