@@ -72,6 +72,8 @@ class HassDatabase:
     def perform_query(self, query, **params):
         """Perform a query."""
         try:
+            if isinstance(query, str):
+                query = text(query)
             with self.engine.connect() as conn:
                 return conn.execute(query, params)
         except:

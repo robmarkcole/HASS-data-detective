@@ -4,6 +4,13 @@ import pandas as pd
 
 db_url = "sqlite:///tests/test.db"
 
+
+def test_perform_query_accepts_raw_string_sql():
+    db = detective.HassDatabase(db_url, fetch_entities=False)
+    result = db.perform_query("SELECT 1")
+    assert result.scalar_one() == 1
+
+
 def test_db():
     db = detective.HassDatabase(db_url)
     assert db is not None
