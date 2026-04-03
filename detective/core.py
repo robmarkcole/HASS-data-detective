@@ -1,9 +1,10 @@
 """
 Classes and functions for parsing home-assistant data.
 """
-from typing import Tuple
 
+from typing import Tuple
 from urllib.parse import urlparse
+
 import pandas as pd
 from sqlalchemy import create_engine, text
 
@@ -169,7 +170,7 @@ class HassDatabase:
         """
         # Statistics imported from an external source are similar to entity_id,
         # but use a : instead of a . as a delimiter between the domain and object ID.
-        sensors_with_semicolons = [sensor.replace('.', ':') for sensor in sensors]
+        sensors_with_semicolons = [sensor.replace(".", ":") for sensor in sensors]
         sensors_combined = list(sensors) + sensors_with_semicolons
         sensors_str = str(tuple(sensors_combined))
         if len(sensors_combined) == 1:

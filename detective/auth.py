@@ -1,4 +1,5 @@
 """Auth helper."""
+
 import json
 import os
 
