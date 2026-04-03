@@ -30,7 +30,7 @@ def test_sqlalch_datetime():
 def test_localize():
     now_time = builtin_time()
     now = datetime.fromtimestamp(now_time)
-    utcnow = datetime.utcfromtimestamp(now_time).replace(tzinfo=time.UTC)
+    utcnow = datetime.fromtimestamp(now_time, time.UTC)
     # There is always a little offset because of how LOCAL_UTC_OFFSET is
     # calculated. We calculate here it's not more than 1 second off
     assert -1 < (time.localize(utcnow) - now).total_seconds() < 1
