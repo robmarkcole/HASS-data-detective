@@ -117,11 +117,9 @@ class HassDatabase:
         ORDER BY last_updated_ts DESC
         """
 
-        if limit is not None:
-            query += f"LIMIT {limit}"
+        query, params = _apply_limit(text(query), limit)
         print(query)
-        query = text(query)
-        df = pd.read_sql_query(query, con=self.con)
+        df = pd.read_sql_query(query, con=self.con, params=params)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
 
@@ -134,9 +132,8 @@ class HassDatabase:
             If None, there is no limit.
         - get_attributes: If True, LEFT JOIN the attributes table to retrieve event's attributes.
         """
-        sensors_str = str(tuple(sensors))
-        if len(sensors) == 1:
-            sensors_str = sensors_str.replace(",", "")
+        sensor_ids = _normalise_sensor_ids(sensors)
+        sensors_str, params = _sensor_filter(sensor_ids)
 
         query = f"""
             WITH combined_states AS (
@@ -148,17 +145,16 @@ class HassDatabase:
             SELECT *
             FROM combined_states
             WHERE 
-                entity_id IN {sensors_str}
+                entity_id IN ({sensors_str})
             AND
                 state NOT IN ('unknown', 'unavailable')
             ORDER BY last_updated_ts DESC
         """
 
-        if limit is not None:
-            query += f"LIMIT {limit}"
+        query, limit_params = _apply_limit(text(query), limit)
+        params.update(limit_params)
         print(query)
-        query = text(query)
-        df = pd.read_sql_query(query, con=self.con)
+        df = pd.read_sql_query(query, con=self.con, params=params)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
 
@@ -172,11 +168,10 @@ class HassDatabase:
         """
         # Statistics imported from an external source are similar to entity_id,
         # but use a : instead of a . as a delimiter between the domain and object ID.
-        sensors_with_semicolons = [sensor.replace(".", ":") for sensor in sensors]
-        sensors_combined = list(sensors) + sensors_with_semicolons
-        sensors_str = str(tuple(sensors_combined))
-        if len(sensors_combined) == 1:
-            sensors_str = sensors_str.replace(",", "")
+        sensor_ids = _normalise_sensor_ids(sensors)
+        sensors_with_semicolons = [sensor.replace(".", ":") for sensor in sensor_ids]
+        sensors_combined = list(sensor_ids) + sensors_with_semicolons
+        sensors_str, params = _sensor_filter(sensors_combined)
 
         query = f"""
             WITH combined_states AS (
@@ -200,14 +195,42 @@ class HassDatabase:
             SELECT *
             FROM combined_states
             WHERE 
-                statistic_id IN {sensors_str}
+                statistic_id IN ({sensors_str})
             ORDER BY created_ts DESC
         """
 
-        if limit is not None:
-            query += f"LIMIT {limit}"
+        query, limit_params = _apply_limit(text(query), limit)
+        params.update(limit_params)
         print(query)
-        query = text(query)
-        df = pd.read_sql_query(query, con=self.con)
+        df = pd.read_sql_query(query, con=self.con, params=params)
         print(f"The returned Pandas dataframe has {df.shape[0]} rows of data.")
         return df
+
+
+def _normalise_sensor_ids(sensors: Tuple[str]) -> tuple[str, ...]:
+    """Return non-empty sensor identifiers as a validated tuple."""
+    if isinstance(sensors, str):
+        sensors = (sensors,)
+
+    sensor_ids = tuple(sensors)
+    if not sensor_ids or any(
+        not isinstance(sensor, str) or not sensor for sensor in sensor_ids
+    ):
+        raise ValueError("sensors must contain at least one non-empty string")
+    return sensor_ids
+
+
+def _sensor_filter(sensors: tuple[str, ...]) -> tuple[str, dict[str, str]]:
+    """Build a bound SQL IN list without interpolating user input."""
+    params = {f"sensor_{index}": sensor for index, sensor in enumerate(sensors)}
+    placeholders = ", ".join(f":{name}" for name in params)
+    return placeholders, params
+
+
+def _apply_limit(query, limit):
+    """Add a validated bound LIMIT clause when requested."""
+    if limit is None:
+        return query, {}
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 0:
+        raise ValueError("limit must be a non-negative integer or None")
+    return text(f"{query.text}LIMIT :limit"), {"limit": limit}

@@ -1,5 +1,6 @@
 from unittest.mock import patch, MagicMock
 import pandas as pd
+import pytest
 
 from detective.core import get_db_type, stripped_db_url, HassDatabase
 
@@ -22,7 +23,11 @@ def test_fetch_entities(mock_db):
     with patch.object(
         mock_db,
         "perform_query",
-        return_value=[["light.kitchen"], ["light.living_room"], ["switch.ac"],],
+        return_value=[
+            ["light.kitchen"],
+            ["light.living_room"],
+            ["switch.ac"],
+        ],
     ):
         mock_db.fetch_entities()
 
@@ -35,6 +40,7 @@ mock_data = pd.DataFrame({
     "entity_id": ["sensor.temperature", "sensor.humidity"],
     "shared_attrs": ["{}", "{}"]
 })
+
 
 @patch("sqlalchemy.create_engine")
 def test_fetch_all_sensor_data(mock_create_engine):
@@ -53,3 +59,20 @@ def test_fetch_all_sensor_data(mock_create_engine):
 
         result = db.fetch_all_sensor_data()
         assert isinstance(result, pd.DataFrame)
+
+
+def test_fetch_all_data_of_binds_sensor_ids_and_limit(mock_db):
+    """Sensor identifiers and limits must not be interpolated into SQL."""
+    with patch("detective.core.pd.read_sql_query", return_value=pd.DataFrame()) as read:
+        mock_db.fetch_all_data_of(["sensor.temp' OR 1=1 --"], limit=5)
+
+    query = str(read.call_args.args[0])
+    params = read.call_args.kwargs["params"]
+    assert "sensor.temp' OR 1=1 --" not in query
+    assert ":sensor_0" in query
+    assert params == {"sensor_0": "sensor.temp' OR 1=1 --", "limit": 5}
+
+
+def test_fetch_all_data_of_rejects_invalid_limit(mock_db):
+    with pytest.raises(ValueError, match="limit"):
+        mock_db.fetch_all_data_of(["sensor.temp"], limit="5")

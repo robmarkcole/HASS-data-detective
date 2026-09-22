@@ -14,7 +14,11 @@ _CONFIGURATION_PATH: Optional[Path] = None
 
 def default_hass_config_dir():
     """Put together the default configuration directory based on the OS."""
-    data_dir = os.getenv("APPDATA") if os.name == "nt" else os.path.expanduser("~")
+    data_dir = (
+        os.getenv("APPDATA") or os.path.expanduser("~")
+        if os.name == "nt"
+        else os.path.expanduser("~")
+    )
     return os.path.join(data_dir, ".homeassistant")
 
 
@@ -138,8 +142,8 @@ def db_url_from_hass_config(path):
     global _CONFIGURATION_PATH
     _CONFIGURATION_PATH = Path(path).resolve()
     config = load_hass_config(path)
-    default_path = os.path.join(path, "home-assistant_v2.db")
-    default_url = "sqlite:///{}".format(default_path)
+    default_path = Path(path) / "home-assistant_v2.db"
+    default_url = "sqlite:///{}".format(default_path.as_posix())
 
     recorder = config.get("recorder")
 
