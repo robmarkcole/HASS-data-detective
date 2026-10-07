@@ -63,7 +63,7 @@ def test_fetch_all_sensor_data(mock_create_engine):
 
 def test_fetch_all_data_of_binds_sensor_ids_and_limit(mock_db):
     """Sensor identifiers and limits must not be interpolated into SQL."""
-    with patch("detective.core.pd.read_sql_query", return_value=pd.DataFrame()) as read:
+    with patch("pandas.read_sql_query", return_value=pd.DataFrame()) as read:
         mock_db.fetch_all_data_of(["sensor.temp' OR 1=1 --"], limit=5)
 
     query = str(read.call_args.args[0])

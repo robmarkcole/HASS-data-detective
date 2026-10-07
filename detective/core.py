@@ -233,4 +233,4 @@ def _apply_limit(query, limit):
         return query, {}
     if isinstance(limit, bool) or not isinstance(limit, int) or limit < 0:
         raise ValueError("limit must be a non-negative integer or None")
-    return text(f"{query.text}LIMIT :limit"), {"limit": limit}
+    return text(f"{query.text} LIMIT :limit"), {"limit": limit}
