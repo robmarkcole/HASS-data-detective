@@ -2,7 +2,7 @@
 Classes and functions for parsing home-assistant data.
 """
 
-from typing import Tuple
+from typing import Dict, Tuple
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -207,7 +207,7 @@ class HassDatabase:
         return df
 
 
-def _normalise_sensor_ids(sensors: Tuple[str]) -> tuple[str, ...]:
+def _normalise_sensor_ids(sensors: Tuple[str, ...]) -> Tuple[str, ...]:
     """Return non-empty sensor identifiers as a validated tuple."""
     if isinstance(sensors, str):
         sensors = (sensors,)
@@ -220,7 +220,7 @@ def _normalise_sensor_ids(sensors: Tuple[str]) -> tuple[str, ...]:
     return sensor_ids
 
 
-def _sensor_filter(sensors: tuple[str, ...]) -> tuple[str, dict[str, str]]:
+def _sensor_filter(sensors: Tuple[str, ...]) -> Tuple[str, Dict[str, str]]:
     """Build a bound SQL IN list without interpolating user input."""
     params = {f"sensor_{index}": sensor for index, sensor in enumerate(sensors)}
     placeholders = ", ".join(f":{name}" for name in params)
