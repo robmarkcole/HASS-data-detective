@@ -1,0 +1,42 @@
+[build-system]
+requires = [
+    "setuptools>=80",
+    "setuptools-scm[simple]>=9.2,<11",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "HASS-data-detective"
+dynamic = ["version"]
+description = "Tools for studying Home Assistant data."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Robin Cole", email = "robmarkcole@gmail.com" },
+]
+keywords = ["home", "automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "pandas>=1.1.4",
+    "ruamel.yaml>=0.15.78",
+    "SQLAlchemy>=2.0.7",
+    "pytz",
+]
+
+[project.urls]
+Homepage = "https://github.com/robmarkcole/HASS-data-detective"
+
+[tool.setuptools.packages.find]
+include = ["detective*"]
+exclude = ["tests*"]
+
+[tool.setuptools_scm]
